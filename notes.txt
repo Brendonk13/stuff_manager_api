@@ -1,0 +1,6 @@
+
+====================================================== FEATURES ======================================================
+what if an action could reference a non-actionable item of any sort
+    - like a note or a calendar date
+    - they will need to
+    - why not bake it in now

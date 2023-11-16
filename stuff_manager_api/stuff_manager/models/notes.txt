@@ -1,0 +1,28 @@
+actionable, non-actionable should be same table since there will never be that many actionable ones if ppl actually store notes
+- ie would still have one huge table
+
+tags is separate table, allows for indexing tags of everything per user
+- everything has tags
+
+untouched:
+    - all new things, have the ability to mark
+    - i review this queue and put it in a bucket
+
+actionable:
+    ***- what will have happened to be able to check this off
+        -- describe in past tense
+    *** multi step
+    ***- "Whats the next action"
+        one-step only:
+            - put in calendar
+            - complete asap
+        multiple steps:
+
+non-actionable:
+    - trash
+    - someday/maybe
+    - references (generic notes)
+
+
+actionable has optional context thats needed
+    - ie grocery store
