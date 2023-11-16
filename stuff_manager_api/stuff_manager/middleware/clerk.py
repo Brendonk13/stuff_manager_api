@@ -1,12 +1,17 @@
-# middleware.py
 import datetime
 from datetime import datetime
+
 # https://lucasleite-us.medium.com/integrating-clerk-with-django-rest-framework-e1e2f041dba2
+
+# Note: found this which is diff from this
+# https://github.com/clerk/django-example
+
 
 import jwt
 import pytz
 import requests
-from django.contrib.auth.models import User
+# from django.contrib.auth.models import User
+from ..models import User
 from django.core.cache import cache
 from jwt.algorithms import RSAAlgorithm
 from rest_framework.authentication import BaseAuthentication
@@ -32,16 +37,17 @@ class JWTAuthenticationMiddleware(BaseAuthentication):
         except IndexError:
             raise AuthenticationFailed("Bearer token not provided.")
         user = self.decode_jwt(token)
+        print("decoded, user:", user)
         clerk = ClerkSDK()
-        info, found = clerk.fetch_user_info(user.username)
+        info, found = clerk.fetch_user_info(user.clerk_id)
         if not user:
             return None
         else:
             if found:
                 user.email = info["email_address"]
-                user.first_name = info["first_name"]
-                user.last_name = info["last_name"]
-                user.last_login = info["last_login"]
+                # user.first_name = info["first_name"]
+                # user.last_name = info["last_name"]
+                # user.last_login = info["last_login"]
             user.save()
 
         return user, None
@@ -65,8 +71,9 @@ class JWTAuthenticationMiddleware(BaseAuthentication):
             raise AuthenticationFailed("Invalid token.")
 
         user_id = payload.get("sub")
+        # todo: use email not username
         if user_id:
-            user, created = User.objects.get_or_create(username=user_id)
+            user, created = User.objects.get_or_create(clerk_id=user_id)
             return user
         return None
 
@@ -80,18 +87,18 @@ class ClerkSDK:
             data = response.json()
             return {
                 "email_address": data["email_addresses"][0]["email_address"],
-                "first_name": data["first_name"],
-                "last_name": data["last_name"],
-                "last_login": datetime.datetime.fromtimestamp(
-                    data["last_sign_in_at"] / 1000, tz=pytz.UTC
-                ),
+                # "first_name": data["first_name"],
+                # "last_name": data["last_name"],
+                # "last_login": datetime.datetime.fromtimestamp(
+                #     data["last_sign_in_at"] / 1000, tz=pytz.UTC
+                # ),
             }, True
         else:
             return {
                 "email_address": "",
-                "first_name": "",
-                "last_name": "",
-                "last_login": None,
+                # "first_name": "",
+                # "last_name": "",
+                # "last_login": None,
             }, False
 
     def get_jwks(self):

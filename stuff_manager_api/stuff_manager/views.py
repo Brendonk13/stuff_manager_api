@@ -7,6 +7,7 @@ from rest_framework import permissions, serializers, viewsets
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
+        fields = "__all__"
 
 
 class UserViewSet(viewsets.ModelViewSet):

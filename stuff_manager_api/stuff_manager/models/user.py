@@ -51,6 +51,7 @@ class User(AbstractUser):
     created = models.DateTimeField(auto_now_add=True)
     # bio = models.TextField(blank=True)
     # profile_picture = models.URLField(max_length=300, default='')
+    clerk_id = models.CharField(max_length=256, null=True, blank=True, default='')
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
