@@ -43,6 +43,8 @@ class UserManager(BaseUserManager):
         return self.create_user(email, password, **extra_fields)
 
 
+
+
 class User(AbstractUser):
     use_in_migrations = True
     username = None
@@ -61,3 +63,9 @@ class User(AbstractUser):
 
     def __repr__(self):
         return self.email
+
+
+
+class UserProfile(models.Model):
+    # one to one with user
+    pass

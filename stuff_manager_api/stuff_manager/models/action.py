@@ -1,50 +1,65 @@
 
-from django.contrib.postgres.fields import ArrayField
+# from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from .tag import Tag
-from functools import partial
+from .user import User
+
+# how can I get an action's history
+# -- adding and removing tags counts
+# -- adding to history will need to be done using signals
 
 class DelegatedActions(models.Manager):
-    # can notes ever go in the someday/maybe category?
-    # -- yes
+    # HOW DO I MARK who I delegated too and why
+    def get_queryset(self):
+        return super().get_queryset().filter(tag__value="delegate")
+
+class SomedayMaybeActions(models.Manager):
     def get_queryset(self):
         return super().get_queryset().filter(tag__value="somedayMaybe")
-        # return Actions_Tags.objects.filter()
 
 class CannotBeDoneYetActions(models.Manager):
+    # HOW DO I MARK THE REASON ON WHY WE ARE WAITING ON A TASK
     def get_queryset(self):
         return super().get_queryset().filter(tag__value="CannotBeDoneYet")
 
+# not sure how to handle this yet, maybe just a date field how I have it is fine
 # class DatedActions(models.Manager):
 #     def get_queryset(self):
 #         return super().get_queryset().filter(date__ne=None)
 
 
+class Project(models.Model):
+    name = models.CharField(max_length=128)
+    notes = models.TextField()
+    # not sure what else should be here
 
-
-
+class Projects_User(models.Model):
+    user = models.ForeignKey(User, on_delete=models.PROTECT)
+    project = models.ForeignKey(Project, on_delete=models.PROTECT)
 
 
 class Action(models.Model):
-    class Meta:
-        ordering = ['created']
-    # FEATURE: what if this action could reference a non-actionable item of any sort
 
     created = models.DateTimeField(auto_now_add=True)
-    title = models.CharField(max_length=128)
+
+    # each action belongs to a user
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, null=True)
 
     # save time with no validation !
     # https://codereview.doctor/features/django/best-practice/charfield-vs-textfield
     description = models.TextField()
+    title = models.CharField(max_length=128)
 
-    date = models.DateTimeField(null=True)
     # date = models.ForeignKey(, on_delete=models.CASCADE)
+    date = models.DateTimeField(null=True)
 
-    # dates = ArrayField(models.DateTimeField(), default=list, blank=True)
-    tags = ArrayField(models.CharField(max_length=64, null=True), default=list, blank=True)
-    context = ArrayField(models.CharField(max_length=64, null=True), default=list, blank=True)
+    # meta_data = models.
+    # want to store reason why cannot be done or why 
+    # meta_data = models.JSONField()
 
-    # tags = models.CharField(max_length=64, null=True)
+    # HOW DO I MARK THE REASON ON WHY WE ARE WAITING ON A TASK
 
 
 class Actions_Tags(models.Model):
@@ -52,5 +67,15 @@ class Actions_Tags(models.Model):
     action = models.ForeignKey(Action, on_delete=models.PROTECT)
 
     tag = models.ForeignKey(Tag, on_delete=models.CASCADE)
-    delegated = DelegatedActions()
 
+
+    # gtd categories
+    delegated = DelegatedActions()
+    cannot_be_done = CannotBeDoneYetActions()
+    someday_maybe = SomedayMaybeActions()
+
+
+class Actions_RequiredContexts(models.Model):
+    action = models.ForeignKey(Action, on_delete=models.PROTECT)
+
+    tag = models.ForeignKey(Tag, on_delete=models.CASCADE)
