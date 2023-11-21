@@ -2,6 +2,28 @@
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from .tag import Tag
+from functools import partial
+
+class DelegatedActions(models.Manager):
+    # can notes ever go in the someday/maybe category?
+    # -- yes
+    def get_queryset(self):
+        return super().get_queryset().filter(tag__value="somedayMaybe")
+        # return Actions_Tags.objects.filter()
+
+class CannotBeDoneYetActions(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(tag__value="CannotBeDoneYet")
+
+# class DatedActions(models.Manager):
+#     def get_queryset(self):
+#         return super().get_queryset().filter(date__ne=None)
+
+
+
+
+
+
 
 class Action(models.Model):
     class Meta:
@@ -30,3 +52,5 @@ class Actions_Tags(models.Model):
     action = models.ForeignKey(Action, on_delete=models.PROTECT)
 
     tag = models.ForeignKey(Tag, on_delete=models.CASCADE)
+    delegated = DelegatedActions()
+

@@ -51,15 +51,13 @@ class User(AbstractUser):
     created = models.DateTimeField(auto_now_add=True)
     # bio = models.TextField(blank=True)
     # profile_picture = models.URLField(max_length=300, default='')
-    clerk_id = models.CharField(max_length=256, null=True, blank=True, default='')
+
+    clerk_id = models.CharField(max_length=256, unique=True)
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
 
     objects = UserManager()
-
-    # class Meta:
-    #     app_label = 'stuff_manager'
 
     def __repr__(self):
         return self.email

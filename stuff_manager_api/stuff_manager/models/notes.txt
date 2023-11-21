@@ -24,5 +24,7 @@ non-actionable:
     - references (generic notes)
 
 
+also have just seperate things for checklists for grocery lists for examples
+
 actionable has optional context thats needed
     - ie grocery store

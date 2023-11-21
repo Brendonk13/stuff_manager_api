@@ -18,12 +18,18 @@ from django.contrib import admin
 from django.urls import path, include
 from rest_framework import routers
 # from stuff_manager_api.stuff_manager import views
-from stuff_manager import views
+# from stuff_manager import views
+from .api import api
+# from stuff_manager_api.stuff_manager.views import router as therouter
+from stuff_manager.views import router as therouter
+
+api.add_router("/route", therouter)
 
 router = routers.DefaultRouter()
-router.register(r"users", views.UserViewSet)
+# router.register(r"users", views.UserViewSet)
 
 urlpatterns = [
-    path("api/", include(router.urls)),
     path("admin/", admin.site.urls),
+    # path("api/", include(router.urls)),
+    path("api/", api.urls),
 ]
