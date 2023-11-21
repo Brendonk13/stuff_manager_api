@@ -16,20 +16,22 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from rest_framework import routers
+# from rest_framework import routers
 # from stuff_manager_api.stuff_manager import views
 # from stuff_manager import views
 from .api import api
-# from stuff_manager_api.stuff_manager.views import router as therouter
-from stuff_manager.views import router as therouter
+# from stuff_manager_api.stuff_manager.router import api_router as therouter
+from stuff_manager.router import api_router
 
-api.add_router("/route", therouter)
+api.add_router("/", api_router)
+# for route, router in api._routers:
+#     print(dir(router))
+# print(api._routers)
 
-router = routers.DefaultRouter()
+# router = routers.DefaultRouter()
 # router.register(r"users", views.UserViewSet)
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    # path("api/", include(router.urls)),
     path("api/", api.urls),
 ]

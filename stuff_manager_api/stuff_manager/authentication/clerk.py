@@ -20,7 +20,6 @@ from dotenv import load_dotenv
 from os import environ as env
 from ninja.security import HttpBearer
 import aiohttp
-import asyncio
 
 load_dotenv()
 
@@ -50,6 +49,8 @@ class ClerkBearerAuth(HttpBearer):
             user.email = clerk_user_info["email_address"]
             # user.last_login = clerk_user_info["last_login"]
             await user.asave()
+
+        # data returned here is stored in request.auth
         return user, None
 
 

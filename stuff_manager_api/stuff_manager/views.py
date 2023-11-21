@@ -8,17 +8,6 @@ from .models import User
 # from ninja import NinjaAPI
 # api = NinjaAPI()
 
-from ninja import Router
-from .authentication.clerk import ClerkBearerAuth
-
-router = Router(auth=ClerkBearerAuth())
-
-@router.get("/hello")
-# def add(request, a: int, b: int):
-    # return {"result": a + b}
-def hello(request):
-    return {"result": "hello"}
-
 
 
 # class UserSerializer(serializers.ModelSerializer):
