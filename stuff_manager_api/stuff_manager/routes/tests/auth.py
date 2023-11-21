@@ -4,8 +4,9 @@ from ninja import Router
 from stuff_manager.authentication.clerk import ClerkBearerAuth
 
 test_auth_router = Router(auth=ClerkBearerAuth())
+# @test_auth_router.get("/")
 
-@test_auth_router.get("/")
+# @test_auth_router.get("/")
 def auth(request):
     print(request)
     print(dir(request))
@@ -16,3 +17,4 @@ def auth(request):
     print(type(request.auth[0]))
     return {"result": "hello"}
 
+test_auth_router.add_api_operation("/", ['GET'], auth)
