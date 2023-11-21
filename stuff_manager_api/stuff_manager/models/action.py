@@ -43,7 +43,7 @@ class Action(models.Model):
     created = models.DateTimeField(auto_now_add=True)
 
     # each action belongs to a user
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, default=None)
 
     project = models.ForeignKey(Project, on_delete=models.CASCADE, null=True)
 
