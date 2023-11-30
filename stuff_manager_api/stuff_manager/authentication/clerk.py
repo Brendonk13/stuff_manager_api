@@ -42,7 +42,7 @@ class ClerkBearerAuth(HttpBearer):
 
         clerk = ClerkSDK()
         clerk_user_info, found_clerk_user_from_id = await clerk.fetch_user_info(user.clerk_id)
-        print("after")
+        # print("after")
         # save new information thats stored in clerk ??
         # print(f"user info: {clerk_user_info}")
         if found_clerk_user_from_id:

@@ -8,7 +8,7 @@ class Unprocessed(models.Model):
     user = models.ForeignKey(User, on_delete=models.PROTECT)
 
     def __repr__(self):
-        return f'Unprocessed(title="{self.title}", user={self.user})'
+        return f'Unprocessed(title="{self.title}", user={self.user_id})'
 
     def __str__(self):
         return self.__repr__()

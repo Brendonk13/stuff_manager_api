@@ -1,0 +1,9 @@
+add general return type:
+
+-- or maybe use one based on django idk
+
+# class DefaultResponseSchema(Schema):
+#     message: str
+#     data: any
+
+
