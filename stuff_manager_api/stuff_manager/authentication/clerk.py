@@ -34,9 +34,9 @@ class AuthenticationFailed(Exception):
 class ClerkBearerAuth(HttpBearer):
     async def authenticate(self, request, token: str):
 
-        print("before decode")
+        # print("before decode")
         user = await self.decode_jwt(token)
-        print("after decode")
+        # print("after decode")
         if not user:
             return None
 

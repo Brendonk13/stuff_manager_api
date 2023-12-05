@@ -1,6 +1,16 @@
-add general return type:
+design figure out:
+    1. How to replace the "completed" folder on computer:
+        - idea is to have optional form show up for completed tasks
+            - can mark something as relevant for interviews
+            - can add note for certain topic
+                -- maybe show a autocomplete of file paths that I can add to
 
+add general return type:
 -- or maybe use one based on django idk
+
+-- make all endpoints return id's -- simplifies types and less code
+
+- add expected energy, start, end times and duration field to actions
 
 # class DefaultResponseSchema(Schema):
 #     message: str

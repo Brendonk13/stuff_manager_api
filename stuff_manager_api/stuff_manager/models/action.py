@@ -14,6 +14,17 @@ from .project import Project
 #     def get_queryset(self):
 #         return super().get_queryset().filter(date__ne=None)
 
+# class ActionCompletion(models.Model):
+#     start_time = models.DateTimeField(default=None, null=True)
+#     end_time = models.DateTimeField(default=None, null=True)
+#     duration = models.PositiveSmallIntegerField()
+#     # I want to store notes on the action ie "had to make sure the permissions were correct"
+#     # The solution will be to create actual files with the notes
+#     # keep duration, etc and auto-add a query || URL to view this note in the app at the top of the file
+#     # when you complete stuff, you will be prompted to add duration, start_time, end_time, and arbitrary notes (that you can
+#     # mark as useful or not?)
+
+    # -- I want these notes to replace my "completed" folder
 
 
 class Action(models.Model):
@@ -24,6 +35,7 @@ class Action(models.Model):
 
     # date = models.ForeignKey(, on_delete=models.CASCADE)
     date = models.DateTimeField(null=True)
+    energy = models.PositiveSmallIntegerField(default=None, null=True)
 
     # meta_data = models.
     # want to store reason why cannot be done or why 
@@ -33,6 +45,8 @@ class Action(models.Model):
     # each action belongs to a user
     user = models.ForeignKey(User, on_delete=models.CASCADE, default=None)
     project = models.ForeignKey(Project, on_delete=models.CASCADE, null=True)
+
+    # completion = models.ForeignKey(ActionCompletion, on_delete=models.CASCADE, null=True)
 
 
 

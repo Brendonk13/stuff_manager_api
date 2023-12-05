@@ -6,7 +6,13 @@ class Project(models.Model):
     notes = models.TextField()
     # not sure what else should be here
 
+    def __repr__(self):
+        return f"Project(id={self.id}, name={self.name})"
+
 class Projects_User(models.Model):
     user = models.ForeignKey(User, on_delete=models.PROTECT)
     project = models.ForeignKey(Project, on_delete=models.PROTECT)
+
+    def __repr__(self):
+        return f"Projects_User(id={self.id}, user={self.user_id}, project={self.project_id})"
 
