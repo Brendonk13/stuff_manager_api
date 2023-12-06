@@ -48,6 +48,12 @@ class Action(models.Model):
 
     # completion = models.ForeignKey(ActionCompletion, on_delete=models.CASCADE, null=True)
 
+    def __repr__(self):
+        return f"Action(title={self.title}, user={self.user_id}, project={self.project_id}, energy={self.energy})"
+
+    def __str__(self):
+        return self.__repr__()
+
 
 
 
