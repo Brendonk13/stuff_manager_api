@@ -9,6 +9,9 @@ class Project(models.Model):
     def __repr__(self):
         return f"Project(id={self.id}, name={self.name})"
 
+    def __str__(self):
+        return self.__repr__()
+
 class Projects_User(models.Model):
     user = models.ForeignKey(User, on_delete=models.PROTECT)
     project = models.ForeignKey(Project, on_delete=models.PROTECT)
@@ -16,3 +19,5 @@ class Projects_User(models.Model):
     def __repr__(self):
         return f"Projects_User(id={self.id}, user={self.user_id}, project={self.project_id})"
 
+    def __str__(self):
+        return self.__repr__()

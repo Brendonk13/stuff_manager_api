@@ -1,3 +1,8 @@
+Next:
+    - setup endpoint for get everything associated with a project (actions and notes seperately)
+    - then create endpoint to get all actions for a user
+    - create all list endpoints so I can get a working frontend
+
 design figure out:
     1. How to replace the "completed" folder on computer:
         - idea is to have optional form show up for completed tasks
