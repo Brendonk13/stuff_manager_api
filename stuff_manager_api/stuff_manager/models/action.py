@@ -77,6 +77,7 @@ class Actions_Tags(models.Model):
     action = models.ForeignKey(Action, on_delete=models.PROTECT)
     tag = models.ForeignKey(Tag, on_delete=models.CASCADE)
 
+    objects = models.Manager()
     # gtd categories
     delegated = DelegatedActions()
     cannot_be_done = CannotBeDoneYetActions()

@@ -1,15 +1,15 @@
 # from stuff_manager_api.stuff_manager.models import project
 from ninja import Schema
-from stuff_manager.models import Action
-from typing import List
+from stuff_manager.models import Action, Actions_Tags
+from typing import List, Optional
 from datetime import datetime
 
 class ActionDBSchema(Schema):
     title: str
     description: str
     created: datetime
-    energy: int
-    project_id: int
+    energy: Optional[int]
+    project_id: Optional[int]
     # project_id: int # should I have this ????
     id: int
 
@@ -33,3 +33,18 @@ async def list_actions(request):
         "message": "Success",
         "data": actions,
     }
+
+
+# todo: make this work by user id, not action id
+async def list_delegated(request):
+    user = request.auth[0]
+    return [delegated async for delegated in Actions_Tags.delegated.filter(action__user_id=user.id)],
+
+async def list_cannot_be_done_yet(request):
+    user = request.auth[0]
+    [cannot_be_done async for cannot_be_done in Actions_Tags.cannot_be_done.filter(action__user_id=user.id)],
+
+async def list_someday_maybe(request):
+    user = request.auth[0]
+    [someday_maybe async for someday_maybe in Actions_Tags.someday_maybe.filter(action__user_id=user.id)],
+
