@@ -49,7 +49,7 @@ class Action(models.Model):
     # completion = models.ForeignKey(ActionCompletion, on_delete=models.CASCADE, null=True)
 
     def __repr__(self):
-        return f"Action(title={self.title}, user={self.user_id}, project={self.project_id}, energy={self.energy})"
+        return f'Action(title="{self.title}", user={self.user_id}, project={self.project_id}, energy={self.energy})'
 
     def __str__(self):
         return self.__repr__()
@@ -64,12 +64,13 @@ class DelegatedActions(models.Manager):
 
 class SomedayMaybeActions(models.Manager):
     def get_queryset(self):
-        return super().get_queryset().filter(tag__value="somedayMaybe")
+        # return super().get_queryset().filter(tag__value="somedayMaybe")
+        return super().get_queryset().filter(tag__value="someday_maybe")
 
 class CannotBeDoneYetActions(models.Manager):
     # HOW DO I MARK THE REASON ON WHY WE ARE WAITING ON A TASK
     def get_queryset(self):
-        return super().get_queryset().filter(tag__value="CannotBeDoneYet")
+        return super().get_queryset().filter(tag__value="cannot_be_done_yet")
 
 
 class Actions_Tags(models.Model):
@@ -83,7 +84,19 @@ class Actions_Tags(models.Model):
     cannot_be_done = CannotBeDoneYetActions()
     someday_maybe = SomedayMaybeActions()
 
+    def __repr__(self):
+        return f'Actions_Tags(action={self.action_id}, tag={self.tag_id})'
+
+    def __str__(self):
+        return self.__repr__()
+
 
 class Actions_RequiredContexts(models.Model):
     action = models.ForeignKey(Action, on_delete=models.PROTECT)
     tag = models.ForeignKey(Tag, on_delete=models.CASCADE)
+
+    def __repr__(self):
+        return f'Actions_RequiredContexts(action={self.action_id}, tag={self.tag_id})'
+
+    def __str__(self):
+        return self.__repr__()

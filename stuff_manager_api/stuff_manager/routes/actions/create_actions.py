@@ -73,7 +73,8 @@ def extract_tags_and_contexts(action_data):
     tags = []
     # add default tags
     for tag in default_tags:
-        tags.append(action_data.get(tag, None))
+        if action_data.get(tag): # Ex.) if delegated==True, add delegated
+            tags.append(tag)
         # delete from action_data which is used to create an action row
         if tag in action_data:
             del action_data[tag]
@@ -92,18 +93,18 @@ def extract_tags_and_contexts(action_data):
 async def add_tags_and_contexts(action_id: int, tags, required_context):
     # create Tags
     action_tags = []
+    print("input tags")
     for tag in tags:
         if not tag:
             continue
         db_tag, _ = await Tag.objects.aget_or_create(value=tag)
         # print("created tag:", db_tag)
-        action_tags.append({
-            "action_id": action_id,
-            "tag_id": db_tag.id,
-        })
+        action_tags.append(
+            Actions_Tags(action_id=action_id, tag_id=db_tag.id)
+        )
 
-    for action_tag in action_tags:
-        await Actions_Tags.objects.acreate(**action_tag)
+    print("going to create tags:", action_tags)
+    await Actions_Tags.objects.abulk_create(action_tags)
 
     # create Contexts
     action_contexts = []
@@ -111,13 +112,11 @@ async def add_tags_and_contexts(action_id: int, tags, required_context):
         if not context:
             continue
         db_context, _ = await Tag.objects.aget_or_create(value=context)
-        action_contexts.append({
-            "action_id": action_id,
-            "tag_id": db_context.id,
-        })
+        action_contexts.append(
+            Actions_RequiredContexts(action_id=action_id, tag_id=db_context.id)
+        )
 
-    for context in action_contexts:
-        await Actions_RequiredContexts.objects.acreate(**context)
+    await Actions_RequiredContexts.objects.abulk_create(action_contexts)
 
 
 # =================================== ENTRYPOINT ===============================

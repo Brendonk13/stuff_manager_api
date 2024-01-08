@@ -13,6 +13,10 @@ Next:
             - someday maybe
             - cannot be done yet
 
+FIX:
+    - api response for empty data ie lists when there are no data
+        -- these fail pydantic
+
 design figure out:
     1. How to replace the "completed" folder on computer:
         - idea is to have optional form show up for completed tasks

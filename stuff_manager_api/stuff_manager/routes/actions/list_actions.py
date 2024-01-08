@@ -38,13 +38,25 @@ async def list_actions(request):
 # todo: make this work by user id, not action id
 async def list_delegated(request):
     user = request.auth[0]
-    return [delegated async for delegated in Actions_Tags.delegated.filter(action__user_id=user.id)],
-
-async def list_cannot_be_done_yet(request):
-    user = request.auth[0]
-    [cannot_be_done async for cannot_be_done in Actions_Tags.cannot_be_done.filter(action__user_id=user.id)],
+    actions = [delegated.action async for delegated in Actions_Tags.delegated.filter(action__user_id=user.id).select_related("action")]
+    return {
+        "message": "Success",
+        "data": actions,
+    }
 
 async def list_someday_maybe(request):
     user = request.auth[0]
-    [someday_maybe async for someday_maybe in Actions_Tags.someday_maybe.filter(action__user_id=user.id)],
+    actions = [someday_maybe.action async for someday_maybe in Actions_Tags.someday_maybe.filter(action__user_id=user.id).select_related("action")]
+    return {
+        "message": "Success",
+        "data": actions,
+    }
+
+async def list_cannot_be_done_yet(request):
+    user = request.auth[0]
+    actions = [cannot_be_done.action async for cannot_be_done in Actions_Tags.cannot_be_done.filter(action__user_id=user.id).select_related("action")]
+    return {
+        "message": "Success",
+        "data": actions,
+    }
 
