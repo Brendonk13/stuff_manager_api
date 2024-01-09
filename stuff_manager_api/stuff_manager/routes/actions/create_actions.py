@@ -2,7 +2,7 @@
 from ninja import Schema
 from typing_extensions import TypedDict
 from stuff_manager.models import Action, Actions_Tags, Actions_RequiredContexts, Project, Tag
-from typing import List, Optional
+from typing import Optional
 from datetime import datetime
 
 
@@ -43,7 +43,7 @@ class ProjectSchema(Schema):
 class ProcessActions(Schema):
     unprocessed_id: int
     project: ProjectSchema
-    actions: List[ActionSchema] # todo: NOT OPTIONAL
+    actions: list[ActionSchema] # todo: NOT OPTIONAL
 
     @staticmethod
     def resolve_unprocessed_id(obj): # change from camel case
@@ -53,7 +53,7 @@ class ProcessActions(Schema):
 
 class CreateActionsResponseSchema(Schema):
     message: str
-    # data: List[ProjectDBSchema]
+    # data: list[ProjectDBSchema]
 
 
 

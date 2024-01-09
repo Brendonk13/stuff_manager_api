@@ -60,7 +60,7 @@ class Action(models.Model):
 class DelegatedActions(models.Manager):
     # HOW DO I MARK who I delegated too and why
     def get_queryset(self):
-        return super().get_queryset().filter(tag__value="delegate")
+        return super().get_queryset().filter(tag__value="delegated")
 
 class SomedayMaybeActions(models.Manager):
     def get_queryset(self):

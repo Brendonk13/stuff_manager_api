@@ -1,7 +1,6 @@
 # from stuff_manager_api.stuff_manager.models import project
 from ninja import Schema
 from stuff_manager.models import Projects_User
-from typing import List
 from ninja.errors import HttpError
 
 class ProjectDBSchema(Schema):

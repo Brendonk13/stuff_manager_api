@@ -5,7 +5,7 @@ from datetime import datetime
 import json
 from ninja import ModelSchema
 from stuff_manager.models import Action
-from typing import List, Optional
+from typing import Optional
 
 class ActionSchema(Schema):
     title: str
@@ -25,7 +25,7 @@ class ProcessActions(Schema):
     title: str
     description: str
     project: bool
-    steps: List[ActionSchema]
+    steps: list[ActionSchema]
     user: int
 
     @staticmethod

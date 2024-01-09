@@ -1,7 +1,7 @@
 # from stuff_manager_api.stuff_manager.models import project
 from ninja import Schema
 from stuff_manager.models import Action, Actions_Tags
-from typing import List, Optional
+from typing import Optional
 from datetime import datetime
 
 class ActionDBSchema(Schema):
@@ -15,7 +15,7 @@ class ActionDBSchema(Schema):
 
 class ListActionsResponseSchema(Schema):
     message: str
-    data: List[ActionDBSchema]
+    data: list[Optional[ActionDBSchema]]
 
 async def actions_for_user(user_id: int):
     return [
