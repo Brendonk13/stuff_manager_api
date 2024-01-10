@@ -81,7 +81,7 @@ class Actions_Tags(models.Model):
     objects = models.Manager()
     # gtd categories
     delegated = DelegatedActions()
-    cannot_be_done = CannotBeDoneYetActions()
+    cannot_be_done_yet = CannotBeDoneYetActions()
     someday_maybe = SomedayMaybeActions()
 
     def __repr__(self):

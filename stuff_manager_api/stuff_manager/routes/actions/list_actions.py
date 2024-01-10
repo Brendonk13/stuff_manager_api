@@ -1,8 +1,9 @@
 # from stuff_manager_api.stuff_manager.models import project
-from ninja import Schema
+from ninja import Schema, Query
 from stuff_manager.models import Action, Actions_Tags
 from typing import Optional
 from datetime import datetime
+from stuff_manager.schemas.common import ActionQueryFilterSchema
 
 class ActionDBSchema(Schema):
     title: str
@@ -13,50 +14,38 @@ class ActionDBSchema(Schema):
     # project_id: int # should I have this ????
     id: int
 
-class ListActionsResponseSchema(Schema):
-    message: str
-    data: list[Optional[ActionDBSchema]]
+ListActionsResponseSchema = list[Optional[ActionDBSchema]]
 
-async def actions_for_user(user_id: int):
+# todo: cannot paginate async yet
+# https://github.com/vitalik/django-ninja/pull/1030/commits
+# @paginate
+async def list_actions(request, filters: Query[ActionQueryFilterSchema]):
+    user = request.auth[0]
     return [
         action
         async for action
-        in Action.objects.filter(user_id=user_id)
+        in filters.filter(Action.objects.filter(user_id=user.id))
     ]
 
-
-async def list_actions(request):
+async def list_delegated(request, filters: Query[ActionQueryFilterSchema]):
     user = request.auth[0]
-    actions = await actions_for_user(user.id)
-    print(f"actions for user: {actions}")
-    return {
-        "message": "Success",
-        "data": actions,
-    }
+    return await list_action_tags(Actions_Tags.delegated, user.id, filters)
 
-
-# todo: make this work by user id, not action id
-async def list_delegated(request):
+async def list_someday_maybe(request, filters: Query[ActionQueryFilterSchema]):
     user = request.auth[0]
-    actions = [delegated.action async for delegated in Actions_Tags.delegated.filter(action__user_id=user.id).select_related("action")]
-    return {
-        "message": "Success",
-        "data": actions,
-    }
+    return await list_action_tags(Actions_Tags.someday_maybe, user.id, filters)
 
-async def list_someday_maybe(request):
+async def list_cannot_be_done_yet(request, filters: Query[ActionQueryFilterSchema]):
     user = request.auth[0]
-    actions = [someday_maybe.action async for someday_maybe in Actions_Tags.someday_maybe.filter(action__user_id=user.id).select_related("action")]
-    return {
-        "message": "Success",
-        "data": actions,
-    }
+    return await list_action_tags(Actions_Tags.cannot_be_done_yet, user.id, filters)
 
-async def list_cannot_be_done_yet(request):
-    user = request.auth[0]
-    actions = [cannot_be_done.action async for cannot_be_done in Actions_Tags.cannot_be_done.filter(action__user_id=user.id).select_related("action")]
-    return {
-        "message": "Success",
-        "data": actions,
-    }
 
+async def list_action_tags(queryset, user_id: int, filters: Query[ActionQueryFilterSchema]):
+    return [
+        action_tag.action
+        async for action_tag
+        in filters.filter(queryset.filter(action__user_id=user_id).select_related("action")).distinct()
+    ]
+
+# def query_filter(queryset, user_id: int):
+    # https://django-ninja.dev/guides/input/filtering/

@@ -14,12 +14,17 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 from os import environ
+# import django_stubs_ext
+
 
 load_dotenv()
+# django_stubs_ext.monkeypatch()
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+# print("BASE_DIR", BASE_DIR)
+# print("TALLO", Path(__file__).joinpath("../../../..").resolve())
 
 
 # Quick-start development settings - unsuitable for production
@@ -46,6 +51,7 @@ INSTALLED_APPS = [
     #"rest_framework",
     "corsheaders",
     "stuff_manager_api",
+    # "ninja",
     # "stuff_manager_api.stuff_manager",
     "stuff_manager",
 ]

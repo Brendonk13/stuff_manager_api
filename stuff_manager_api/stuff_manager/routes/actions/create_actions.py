@@ -1,13 +1,10 @@
 # from stuff_manager_api.stuff_manager.models import project
 from ninja import Schema
-from typing_extensions import TypedDict
 from stuff_manager.models import Action, Actions_Tags, Actions_RequiredContexts, Project, Tag
 from typing import Optional
 from datetime import datetime
+from stuff_manager.schemas.common import TagType
 
-
-class TagType(TypedDict):
-    value: str
 
 # =================================== SCHEMA ===================================
 class ActionSchema(Schema):
