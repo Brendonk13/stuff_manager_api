@@ -10,11 +10,8 @@ class TagType(TypedDict):
 
 # https://django-ninja.dev/guides/input/filtering/
 class ActionQueryFilterSchema(FilterSchema):
-    # 
     tags: Optional[list[str]] = None
-    # tags: Optional[list[str]] = Field(None, alias="actions_tags__value")
-    # tags: Optional[list[TagType]] = None
-    # required_context: Optional[list[TagType]] = None
+    required_context: Optional[list[str]] = None
     date: Optional[datetime] = None
     title: Optional[str] = None
     energy: Optional[int] = None
@@ -22,20 +19,26 @@ class ActionQueryFilterSchema(FilterSchema):
     # def filter_tags(self, value: bool) -> Q:
     # def filter_tags(self, value) -> Q:
     def filter_tags(self, _tags: Optional[list[str]]) -> Q:
+        # return self.filter_required_context(_tags)
+        if not _tags:
+            return Q()
+        # parse query string
+        tags = [tag.strip("\"'") for tag in _tags[0].rstrip("]").lstrip("[").split(",")]
+
+        q_objects = Q(actions_tags__tag__value__in=tags)
+        return q_objects
+
+    def filter_required_context(self, _tags: Optional[list[str]]) -> Q:
 
         if not _tags:
             return Q()
-        # tags = _tags[0].lstrip("[").rstrip("]")
-        # tags = ["delegated", "someday_maybe"]
-        # tags = ["delegated", "someday_maybe"]
-        tags = ["usedOnceTag", "delegated"]
+        # parse query string
+        tags = [tag.strip("\"'") for tag in _tags[0].rstrip("]").lstrip("[").split(",")]
+
         # q_objects = Q() # Create an empty Q object to start with
         # for t in tags:
         #     print(t)
-        #     q_objects |= Q(actions_tags__tag__value=t)
-        q_objects = Q(actions_tags__tag__value__in=tags)
-        print("filter thing", tags)
-        return q_objects
-        # return Q(action__tag__value=
-        # return Q(view_count__gt=1000) | Q(download_count__gt=100) if value else Q()
+        #     q_objects &= Q(actions_tags__tag__value=t)
 
+        q_objects = Q(actions_requiredcontexts__tag__value__in=tags)
+        return q_objects
