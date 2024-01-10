@@ -1,0 +1,22 @@
+
+[tool.pyright]
+venv = "python_venv"
+extraPaths = "stuff_manager_api/stuff_manager"
+venvPath = "/home/brendon/dev/dev/my_projects/stuff_manager/python_venv"
+reportTypeshedErrors = false
+reportMissingImports = true
+reportMissingTypeStubs = true
+reportUnusedImport = true
+reportDeprecated = true
+reportImportCycles = true
+# stubPath = "stuff_manager_api"
+# reportMissingModuleSource = false
+
+# this allows imports to work with autocomplete
+executionEnvironments = [
+    { "root" = "stuff_manager_api" }
+]
+
+
+# [tool.django-stubs]
+# django_settings_module = "stuff_manager_api.settings"
