@@ -1,6 +1,6 @@
 # from stuff_manager_api.stuff_manager.models import project
 from ninja import Schema
-from stuff_manager.models import Action, Actions_Tags, Actions_RequiredContexts, Project, Tag
+from stuff_manager.models import Action, Actions_Tags, Actions_RequiredContexts, Project, Projects_User, Tag
 from typing import Optional
 from datetime import datetime
 from stuff_manager.schemas.common import TagType
@@ -138,6 +138,7 @@ async def create_actions(request, data: ProcessActions):
     print("input project", project)
     if project.name and project.id == 0:
         project = await Project.objects.acreate(name=project.name, notes=project.notes)
+        await Projects_User.objects.acreate(project_id=project.id, user_id=user.id)
         print(f"created project: {project}")
 
     # fine for now to do this in a for loop since currently you will not create that many all at once
