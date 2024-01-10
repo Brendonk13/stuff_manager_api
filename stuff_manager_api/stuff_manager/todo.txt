@@ -4,6 +4,8 @@ CURRENT:
         -- add non-default tags and required contexts first
         -- then add list endpoints for various types of actions: somedayMaybe, next_actions, delegated, etc
 
+    - make the list actions endpoint return the tags and contexts for each action
+
 Next:
     - setup endpoint for get everything associated with a project (actions and notes seperately)
     - then create endpoint to get all actions for a user

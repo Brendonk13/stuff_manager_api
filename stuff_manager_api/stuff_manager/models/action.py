@@ -57,22 +57,6 @@ class Action(models.Model):
 
 
 
-# class DelegatedActions(models.Manager):
-#     # HOW DO I MARK who I delegated too and why
-#     def get_queryset(self):
-#         return super().get_queryset().filter(tag__value="delegated")
-
-# class SomedayMaybeActions(models.Manager):
-#     def get_queryset(self):
-#         # return super().get_queryset().filter(tag__value="somedayMaybe")
-#         return super().get_queryset().filter(tag__value="someday_maybe")
-
-# class CannotBeDoneYetActions(models.Manager):
-#     # HOW DO I MARK THE REASON ON WHY WE ARE WAITING ON A TASK
-#     def get_queryset(self):
-#         return super().get_queryset().filter(tag__value="cannot_be_done_yet")
-
-
 class Actions_Tags(models.Model):
     # dont delete action if tag deleted!
     action = models.ForeignKey(Action, on_delete=models.PROTECT)
@@ -80,9 +64,6 @@ class Actions_Tags(models.Model):
 
     objects = models.Manager()
     # gtd categories
-    # delegated = DelegatedActions()
-    # cannot_be_done_yet = CannotBeDoneYetActions()
-    # someday_maybe = SomedayMaybeActions()
 
     def __repr__(self):
         return f'Actions_Tags(action={self.action_id}, tag={self.tag_id})'

@@ -21,25 +21,3 @@ actions_router.add_api_operation(
     list_actions,
     response=ListActionsResponseSchema,
 )
-
-# todo: change the response schema ???
-# actions_router.add_api_operation(
-#     "/delegated",
-#     ['GET'],
-#     list_delegated,
-#     response=ListActionsResponseSchema,
-# )
-
-# actions_router.add_api_operation(
-#     "/someday_maybe",
-#     ['GET'],
-#     list_someday_maybe,
-#     response=ListActionsResponseSchema,
-# )
-
-# actions_router.add_api_operation(
-#     "/cannot_be_done_yet",
-#     ['GET'],
-#     list_cannot_be_done_yet,
-#     response=ListActionsResponseSchema,
-# )
