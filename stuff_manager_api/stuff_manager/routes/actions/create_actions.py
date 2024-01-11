@@ -18,17 +18,17 @@ class ActionSchema(Schema):
     tags: list[TagType]
     required_context: list[TagType]
 
-    @staticmethod
-    def resolve_cannot_be_done_yet(obj): # change from camel case
-        return obj["cannotBeDoneYet"]
+    # @staticmethod
+    # def resolve_cannot_be_done_yet(obj): # change from camel case
+    #     return obj["cannotBeDoneYet"]
 
-    @staticmethod
-    def resolve_someday_maybe(obj): # change from camel case
-        return obj["somedayMaybe"]
+    # @staticmethod
+    # def resolve_someday_maybe(obj): # change from camel case
+    #     return obj["somedayMaybe"]
 
-    @staticmethod
-    def resolve_required_context(obj): # change from camel case
-        return obj["requiredContext"]
+    # @staticmethod
+    # def resolve_required_context(obj): # change from camel case
+    #     return obj["requiredContext"]
 
 
 
@@ -42,9 +42,9 @@ class ProcessActions(Schema):
     project: ProjectSchema
     actions: list[ActionSchema] # todo: NOT OPTIONAL
 
-    @staticmethod
-    def resolve_unprocessed_id(obj): # change from camel case
-        return obj['unprocessedId']
+    # @staticmethod
+    # def resolve_unprocessed_id(obj): # change from camel case
+    #     return obj['unprocessedId']
 
 
 

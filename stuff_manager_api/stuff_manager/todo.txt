@@ -1,22 +1,8 @@
 insert into stuff_manager_tag (value) values ('cannot_be_done_yet');
-CURRENT:
-    - finish support for POST /api/actions so that it creates tags, adds to somedayMaybe etc
-        -- add non-default tags and required contexts first
-        -- then add list endpoints for various types of actions: somedayMaybe, next_actions, delegated, etc
-
-    - make the list actions endpoint return the tags and contexts for each action
 
 Next:
-    - setup endpoint for get everything associated with a project (actions and notes seperately)
-    - then create endpoint to get all actions for a user
-    - create all list endpoints so I can get a working frontend
-        - for lists:
-            - delegate
-            - someday maybe
-            - cannot be done yet
+    - add endpoints to get all actions for each project
 
-FIX:
-    - add query filters to list action endpoints
 
 design figure out:
     1. How to replace the "completed" folder on computer:

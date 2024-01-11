@@ -7,14 +7,7 @@ from typing import Optional
 from datetime import datetime
 # from stuff_manager.schemas.action import ActionQueryFilterSchema, Actions_TagsQueryFilterSchema
 from stuff_manager.schemas.action import ActionQueryFilterSchema
-from stuff_manager.schemas.common import TagType
-
-
-
-# choices are using Actions (with reverse foreign key), Actions_Tags with non-working stuff.., or actions with raw sql query ...
-# todo: try actions_tags again but make the validator by action__actions_tags__tag__value__in=tags
-
-
+# from stuff_manager.schemas.common import TagType
 
 
 class ActionDBSchema(Schema):
@@ -28,6 +21,7 @@ class ActionDBSchema(Schema):
     required_context: Optional[list[str]]
 
 ListActionsResponseSchema = list[Optional[ActionDBSchema]]
+
 
 # todo: cannot paginate async yet
 # https://github.com/vitalik/django-ninja/pull/1030/commits
