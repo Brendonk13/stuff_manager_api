@@ -5,12 +5,12 @@ from datetime import datetime
 
 # https://django-ninja.dev/guides/input/filtering/
 class ActionQueryFilterSchema(FilterSchema):
+    title            : Optional[str]       = None
+    project_id       : Optional[int]       = None
+    energy           : Optional[int]       = None
+    date             : Optional[datetime]  = None
     tags             : Optional[list[str]] = None
     required_context : Optional[list[str]] = None
-    date             : Optional[datetime]  = None
-    title            : Optional[str]       = None
-    energy           : Optional[int]       = None
-    project_id       : Optional[int]       = None
 
     def filter_tags(self, _tags: Optional[list[str]]) -> Q:
         if not _tags:

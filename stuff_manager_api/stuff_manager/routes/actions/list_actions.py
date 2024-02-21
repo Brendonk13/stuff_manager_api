@@ -9,6 +9,9 @@ from datetime import datetime
 from stuff_manager.schemas.action import ActionQueryFilterSchema
 # from stuff_manager.schemas.common import TagType
 
+class ProjectSchema(Schema):
+    project_id: int
+    name: str
 
 class ActionDBSchema(Schema):
     id: int
@@ -16,11 +19,24 @@ class ActionDBSchema(Schema):
     description: str
     created: datetime
     energy: Optional[int]
-    project_id: Optional[int]
+    # todo: maybe return the project title as well
+    # project_id: Optional[int]
+    project: Optional[ProjectSchema]
     tags: Optional[list[str]]
     required_context: Optional[list[str]]
 
 ListActionsResponseSchema = list[Optional[ActionDBSchema]]
+
+def get_project_data(action):
+    if not action.project_id:
+        return {"project": None}
+
+    return {
+        "project": {
+            "project_id": action.project_id,
+            "name": action.project.name,
+        }
+    }
 
 
 # todo: cannot paginate async yet
@@ -29,17 +45,20 @@ ListActionsResponseSchema = list[Optional[ActionDBSchema]]
 def list_actions(request, query_filters: Query[ActionQueryFilterSchema]):
     user = request.auth[0]
     data = []
-    for action in query_filters.filter(Action.objects.filter(user_id=user.id).prefetch_related("actions_tags_set", "actions_requiredcontexts_set")).distinct():
+    # todo: should the seelect related be outside of query_filters.filter ?
+    for action in query_filters.filter(
+        Action.objects.filter(user_id=user.id).prefetch_related("actions_tags_set", "actions_requiredcontexts_set").select_related("project")
+    ).distinct():
         formatted_data = {
             "id": action.id,
             "title": action.title,
             "description": action.description,
             "energy": action.energy,
-            "project_id": action.project_id,
+            # "project_id": action.project_id,
+            **get_project_data(action),
             "created": action.created,
             "tags": [thing.tag.value for thing in action.actions_tags_set.all()],
             "required_context": [thing.tag.value for thing in action.actions_requiredcontexts_set.all()],
         }
         data.append(formatted_data)
-
     return data

@@ -1,7 +1,7 @@
 insert into stuff_manager_tag (value) values ('cannot_be_done_yet');
 
 Next:
-    - add endpoints to get all actions for each project
+    - add sort_order query key to list_actions
 
 
 design figure out:
