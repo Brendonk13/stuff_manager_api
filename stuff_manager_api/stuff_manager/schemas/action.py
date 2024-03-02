@@ -12,6 +12,9 @@ class ActionQueryFilterSchema(FilterSchema):
     tags             : Optional[list[str]] = None
     required_context : Optional[list[str]] = None
 
+    # Format for query string: {hostname}/api/actions?tags=["delegated"]&required_context=["newContext"]&title=another all lists3
+
+
     def filter_tags(self, _tags: Optional[list[str]]) -> Q:
         if not _tags:
             return Q()

@@ -2,11 +2,7 @@
 from ninja import Schema
 from stuff_manager.models import Projects_User
 from typing import Optional
-
-class ProjectDBSchema(Schema):
-    name: str
-    notes: str
-    id: int
+from stuff_manager.schemas.project import ProjectDBSchema
 
 class ListProjectsResponseSchema(Schema):
     message: str

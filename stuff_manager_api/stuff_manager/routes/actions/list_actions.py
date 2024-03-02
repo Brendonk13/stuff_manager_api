@@ -19,10 +19,8 @@ class ActionDBSchema(Schema):
     description: str
     created: datetime
     energy: Optional[int]
-    # todo: maybe return the project title as well
-    # project_id: Optional[int]
     project: Optional[ProjectSchema]
-    tags: Optional[list[str]]
+    tags: Optional[list[str]] # todo: return tag ID's as well
     required_context: Optional[list[str]]
 
 ListActionsResponseSchema = list[Optional[ActionDBSchema]]
@@ -57,6 +55,7 @@ def list_actions(request, query_filters: Query[ActionQueryFilterSchema]):
             # "project_id": action.project_id,
             **get_project_data(action),
             "created": action.created,
+            # todo: should I have ID's in here for the sake of type normalcy
             "tags": [thing.tag.value for thing in action.actions_tags_set.all()],
             "required_context": [thing.tag.value for thing in action.actions_requiredcontexts_set.all()],
         }

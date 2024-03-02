@@ -15,7 +15,6 @@ def list_contexts(request):
     user = request.auth[0]
     data = []
     # todo: make another user and quickly test
-    # TODO: DELETE DUPLICATES
     for action_context in Actions_RequiredContexts.objects.filter(action__user_id=user.id).select_related("tag").distinct("tag__id"):
         data.append({
             "id": action_context.tag.id,
