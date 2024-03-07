@@ -18,20 +18,6 @@ class ActionSchema(Schema):
     tags: list[TagType]
     required_context: list[TagType]
 
-    # @staticmethod
-    # def resolve_cannot_be_done_yet(obj): # change from camel case
-    #     return obj["cannotBeDoneYet"]
-
-    # @staticmethod
-    # def resolve_someday_maybe(obj): # change from camel case
-    #     return obj["somedayMaybe"]
-
-    # @staticmethod
-    # def resolve_required_context(obj): # change from camel case
-    #     return obj["requiredContext"]
-
-
-
 class ProjectSchema(Schema):
     name: str
     notes: str
@@ -42,16 +28,8 @@ class ProcessActions(Schema):
     project: ProjectSchema
     actions: list[ActionSchema] # todo: NOT OPTIONAL
 
-    # @staticmethod
-    # def resolve_unprocessed_id(obj): # change from camel case
-    #     return obj['unprocessedId']
-
-
-
 class CreateActionsResponseSchema(Schema):
     message: str
-    # data: list[ProjectDBSchema]
-
 
 
 # =================================== TAGS =====================================
@@ -117,19 +95,6 @@ async def add_tags_and_contexts(action_id: int, tags, required_context):
 
 
 # =================================== ENTRYPOINT ===============================
-async def create_action(project, action, user_id: int):
-    action_data, tags, required_context = extract_tags_and_contexts(action.dict())
-
-    if project.name:
-        action_data = {**action_data, "project_id": project.id, "user_id": user_id}
-    else:
-        action_data = {**action_data, "user_id": user_id}
-
-    print("action_data", action_data)
-    new_action = await Action.objects.acreate(**action_data)
-    print(f"created action: {new_action}")
-    await add_tags_and_contexts(new_action.id, tags, required_context)
-
 
 async def create_actions(request, data: ProcessActions):
     print("====================== create actions ======================")
@@ -143,8 +108,23 @@ async def create_actions(request, data: ProcessActions):
 
     # fine for now to do this in a for loop since currently you will not create that many all at once
     for action in data.actions:
-        await create_action(project, action, user.id)
+        await create_action(project, action, user.id, data.unprocessed_id)
     return {
         "message": "Success",
         # "data": None,
     }
+
+
+async def create_action(project, action, user_id: int, unprocessed_id: int):
+    action_data, tags, required_context = extract_tags_and_contexts(action.dict())
+    action_data["unprocessed_id"] = unprocessed_id
+
+    if project.name:
+        action_data = {**action_data, "project_id": project.id, "user_id": user_id}
+    else:
+        action_data = {**action_data, "user_id": user_id}
+
+    print("action_data", action_data)
+    new_action = await Action.objects.acreate(**action_data)
+    print(f"created action: {new_action}")
+    await add_tags_and_contexts(new_action.id, tags, required_context)

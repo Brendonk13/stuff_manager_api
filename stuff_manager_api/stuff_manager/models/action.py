@@ -4,6 +4,7 @@ from django.db import models
 from .tag import Tag
 from .user import User
 from .project import Project
+from .unprocessed import Unprocessed
 
 # how can I get an action's history
 # -- adding and removing tags counts
@@ -45,6 +46,7 @@ class Action(models.Model):
     # each action belongs to a user
     user = models.ForeignKey(User, on_delete=models.CASCADE, default=None)
     project = models.ForeignKey(Project, on_delete=models.CASCADE, null=True)
+    unprocessed = models.ForeignKey(Unprocessed, on_delete=models.CASCADE, null=True)
 
     # completion = models.ForeignKey(ActionCompletion, on_delete=models.CASCADE, null=True)
 

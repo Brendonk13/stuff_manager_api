@@ -3,6 +3,7 @@ from stuff_manager.authentication.clerk import ClerkBearerAuth
 from .process_actions import process_actions
 from .create_unprocessed import create_unprocessed, CreateUnprocessedResponseSchema
 from .get_unprocessed import get_unprocessed, GetUnprocessedResponseSchema
+from .list_unprocessed import list_unprocessed, ListUnprocessedResponseSchema
 
 unprocessed_router = Router(auth=ClerkBearerAuth())
 
@@ -22,10 +23,16 @@ unprocessed_router.add_api_operation(
 
 
 # ==================================== GETS ====================================
-# @api.get("/items/{item_id}")
 unprocessed_router.add_api_operation(
     "/{unprocessed_id}",
     ['GET'],
     get_unprocessed,
     response=GetUnprocessedResponseSchema,
+)
+
+unprocessed_router.add_api_operation(
+    "",
+    ['GET'],
+    list_unprocessed,
+    response=ListUnprocessedResponseSchema,
 )
