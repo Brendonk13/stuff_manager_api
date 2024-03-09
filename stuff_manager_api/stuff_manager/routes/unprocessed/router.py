@@ -4,6 +4,7 @@ from .process_actions import process_actions
 from .create_unprocessed import create_unprocessed, CreateUnprocessedResponseSchema
 from .get_unprocessed import get_unprocessed, GetUnprocessedResponseSchema
 from .list_unprocessed import list_unprocessed, ListUnprocessedResponseSchema
+from .delete_unprocessed import delete_unprocessed, DeleteUnprocessedResponseSchema
 
 unprocessed_router = Router(auth=ClerkBearerAuth())
 
@@ -36,3 +37,12 @@ unprocessed_router.add_api_operation(
     list_unprocessed,
     response=ListUnprocessedResponseSchema,
 )
+
+# ==================================== DELETES =================================
+unprocessed_router.add_api_operation(
+    "/{unprocessed_id}",
+    ['DELETE'],
+    delete_unprocessed,
+    response=DeleteUnprocessedResponseSchema,
+)
+
