@@ -1,7 +1,33 @@
 from django.db.models import Q
-from ninja import FilterSchema
+from ninja import FilterSchema, Schema
 from typing import Optional
 from datetime import datetime
+from .project import  ProjectDBSchema
+from stuff_manager.schemas.tag import NewTag as TagType, TagDBSchema
+
+class CreateActionSchema(Schema):
+    title: str
+    description: str
+    date: Optional[datetime] = None
+    energy: Optional[int]
+    cannot_be_done_yet: bool = False
+    delegated: bool = False
+    someday_maybe: bool = False
+    tags: list[TagType]
+    required_context: list[TagType]
+
+
+class ActionDBSchema(Schema):
+    id: int
+    title: str
+    description: str
+    created: datetime
+    energy: Optional[int]
+    project: Optional[ProjectDBSchema]
+    tags: Optional[list[TagDBSchema]] # todo: return tag ID's as well
+    required_context: Optional[list[TagDBSchema]]
+
+
 
 # https://django-ninja.dev/guides/input/filtering/
 class ActionQueryFilterSchema(FilterSchema):

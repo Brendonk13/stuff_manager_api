@@ -3,30 +3,17 @@ from ninja import Schema
 from stuff_manager.models import Action, Actions_Tags, Actions_RequiredContexts, Project, Projects_User, Tag
 from typing import Optional
 from datetime import datetime
-from stuff_manager.schemas.common import TagType
+from stuff_manager.schemas.tag import NewTag as TagType
+from stuff_manager.schemas.action import CreateActionSchema
+from stuff_manager.schemas.project import ProjectDBSchema
 
 
 # =================================== SCHEMA ===================================
-class ActionSchema(Schema):
-    title: str
-    description: str
-    date: Optional[datetime] = None
-    energy: Optional[int]
-    cannot_be_done_yet: bool = False
-    delegated: bool = False
-    someday_maybe: bool = False
-    tags: list[TagType]
-    required_context: list[TagType]
 
-class ProjectSchema(Schema):
-    name: str
-    notes: str
-    id: int # if this is zero then we need to create a new project
-
-class ProcessActions(Schema):
+class ProcessActionsRequestBody(Schema):
     unprocessed_id: int
-    project: ProjectSchema
-    actions: list[ActionSchema] # todo: NOT OPTIONAL
+    project: ProjectDBSchema
+    actions: list[CreateActionSchema] # todo: NOT OPTIONAL
 
 class CreateActionsResponseSchema(Schema):
     message: str
@@ -96,7 +83,7 @@ async def add_tags_and_contexts(action_id: int, tags, required_context):
 
 # =================================== ENTRYPOINT ===============================
 
-async def create_actions(request, data: ProcessActions):
+async def create_actions(request, data: ProcessActionsRequestBody):
     print("====================== create actions ======================")
     user = request.auth[0]
     project = data.project

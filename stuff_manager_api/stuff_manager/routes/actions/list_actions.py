@@ -1,38 +1,24 @@
 # from stuff_manager_api.stuff_manager.models import project
-from asgiref.sync import sync_to_async, async_to_sync
 from ninja import Schema, Query
 # from asgiref.sync import sync_to_async
 from stuff_manager.models import Action, Actions_Tags
 from typing import Optional
 from datetime import datetime
 # from stuff_manager.schemas.action import ActionQueryFilterSchema, Actions_TagsQueryFilterSchema
-from stuff_manager.schemas.action import ActionQueryFilterSchema
+from stuff_manager.schemas.action import ActionQueryFilterSchema, ActionDBSchema
 # from stuff_manager.schemas.common import TagType
-
-class ProjectSchema(Schema):
-    project_id: int
-    name: str
-
-class ActionDBSchema(Schema):
-    id: int
-    title: str
-    description: str
-    created: datetime
-    energy: Optional[int]
-    project: Optional[ProjectSchema]
-    tags: Optional[list[str]] # todo: return tag ID's as well
-    required_context: Optional[list[str]]
 
 ListActionsResponseSchema = list[Optional[ActionDBSchema]]
 
 def get_project_data(action):
     if not action.project_id:
-        return {"project": None}
+        return { "project": None }
 
     return {
         "project": {
-            "project_id": action.project_id,
+            "id": action.project_id,
             "name": action.project.name,
+            "notes": action.project.notes,
         }
     }
 
@@ -56,8 +42,15 @@ def list_actions(request, query_filters: Query[ActionQueryFilterSchema]):
             **get_project_data(action),
             "created": action.created,
             # todo: should I have ID's in here for the sake of type normalcy
-            "tags": [thing.tag.value for thing in action.actions_tags_set.all()],
-            "required_context": [thing.tag.value for thing in action.actions_requiredcontexts_set.all()],
+            "tags": [
+                {"value": tag.tag.value, "id": tag.tag.id}
+                for tag
+                in action.actions_tags_set.all()
+            ],
+            "required_context": [
+                {"value": tag.tag.value, "id": tag.tag.id}
+                for tag
+                in action.actions_requiredcontexts_set.all()],
         }
         data.append(formatted_data)
     return data
