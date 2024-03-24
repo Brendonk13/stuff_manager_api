@@ -3,6 +3,7 @@ from stuff_manager.authentication.clerk import ClerkBearerAuth
 from .list_projects import list_projects, ListProjectsResponseSchema
 from .get_project import get_project, GetProjectResponseSchema
 from .edit_project import edit_project, EditProjectResponseSchema
+from .create_project import create_project, CreateProjectResponseSchema
 
 projects_router = Router(auth=ClerkBearerAuth())
 
@@ -28,4 +29,12 @@ projects_router.add_api_operation(
     ["PUT"],
     edit_project,
     response=EditProjectResponseSchema,
+)
+
+# ==================================== POST ====================================
+projects_router.add_api_operation(
+    "",
+    ["POST"],
+    create_project,
+    response=CreateProjectResponseSchema,
 )
