@@ -1,13 +1,13 @@
 # from typing_extensions import TypedDict
 from ninja import Schema
-
-# todo: move this to its own file ?
-# or make a file just for db schemas
+from typing import Optional
 
 # class NewTag(TypedDict):
 # new tags are for when this is being created
 class NewTag(Schema):
     value: str
+    # this is optional cuz we may send a list of new Tags with no id, and existing Tags which have an id
+    id: Optional[int]
 
 class TagDBSchema(Schema):
     value: str

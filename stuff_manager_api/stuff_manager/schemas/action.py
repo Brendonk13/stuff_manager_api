@@ -3,30 +3,45 @@ from ninja import FilterSchema, Schema
 from typing import Optional
 from datetime import datetime
 from .project import  ProjectDBSchema
-from stuff_manager.schemas.tag import NewTag as TagType, TagDBSchema
+# from stuff_manager.schemas.tag import NewTag as TagType, TagDBSchema
+from stuff_manager.schemas.tag import NewTag, TagDBSchema
 
+# NOte: wont this fail with empty list of tags ??
 class CreateActionSchema(Schema):
-    title: str
-    description: str
-    date: Optional[datetime] = None
-    energy: Optional[int]
-    cannot_be_done_yet: bool = False
-    delegated: bool = False
-    someday_maybe: bool = False
-    tags: list[TagType]
-    required_context: list[TagType]
+    title              : str
+    description        : str
+    date               : Optional[datetime] = None
+    energy             : Optional[int]
+    cannot_be_done_yet : bool = False
+    delegated          : bool = False
+    someday_maybe      : bool = False
+    tags               : list[NewTag]
+    required_context   : list[NewTag]
+
+
+# NOte: wont this fail with empty list of tags ??
+# making fields not required with Optional is not sufficient for pydantic: https://github.com/pydantic/pydantic/issues/6463#issuecomment-1622517803
+class EditActionBody(Schema):
+    id               : int
+    title            : Optional[str] = None
+    description      : Optional[str] = None
+    energy           : Optional[int] = None
+    date             : Optional[datetime] = None
+    project          : Optional[ProjectDBSchema] = None
+    required_context : Optional[list[NewTag]] = None
+    tags             : Optional[list[NewTag]] = None
 
 
 class ActionDBSchema(Schema):
-    id: int
-    title: str
-    description: str
-    created: datetime
-    energy: Optional[int]
-    project: Optional[ProjectDBSchema]
-    tags: Optional[list[TagDBSchema]] # todo: return tag ID's as well
-    required_context: Optional[list[TagDBSchema]]
-
+    id               : int
+    title            : str
+    description      : str
+    created          : datetime
+    energy           : Optional[int]
+    date             : Optional[datetime] # todo: added this later instead of at start by accident, should work
+    project          : Optional[ProjectDBSchema]
+    required_context : Optional[list[TagDBSchema]]
+    tags             : Optional[list[TagDBSchema]] # todo: return tag ID's as well
 
 
 # https://django-ninja.dev/guides/input/filtering/
