@@ -7,7 +7,7 @@ from typing import Optional
 class NewTag(Schema):
     value: str
     # this is optional cuz we may send a list of new Tags with no id, and existing Tags which have an id
-    id: Optional[int]
+    id: Optional[int] = None
 
 class TagDBSchema(Schema):
     value: str
