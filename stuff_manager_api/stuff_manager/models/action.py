@@ -20,6 +20,12 @@ class ActionCompletion(models.Model):
     end_time = models.DateTimeField(default=None, null=True)
     duration = models.PositiveSmallIntegerField(default=0)
     notes = models.TextField()
+
+    def __repr__(self):
+        return f"ActionCompletion(id={self.id}, notes={self.notes})"
+
+    def __str__(self):
+        return self.__repr__()
     # I want to store notes on the action ie "had to make sure the permissions were correct"
     # The solution will be to create actual files with the notes
     # keep duration, etc and auto-add a query || URL to view this note in the app at the top of the file
@@ -49,7 +55,8 @@ class Action(models.Model):
     project = models.ForeignKey(Project, on_delete=models.CASCADE, null=True)
     unprocessed = models.ForeignKey(Unprocessed, on_delete=models.CASCADE, null=True)
 
-    completed = models.ForeignKey(ActionCompletion, on_delete=models.CASCADE, null=True)
+    completion_notes = models.ForeignKey(ActionCompletion, on_delete=models.CASCADE, null=True)
+    completed = models.BooleanField(default=False)
 
     def __repr__(self):
         return f'Action(title="{self.title}", user={self.user_id}, project={self.project_id}, energy={self.energy})'

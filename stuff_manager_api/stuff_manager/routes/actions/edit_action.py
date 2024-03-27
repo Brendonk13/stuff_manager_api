@@ -3,21 +3,25 @@
 from ninja.errors import HttpError
 from typing import Optional
 from django.forms.models import model_to_dict
+from typing_extensions import TypedDict
 
 from stuff_manager.models import Action, Tag, Actions_Tags, Actions_RequiredContexts, Project
-from stuff_manager.schemas.action import EditActionBody, ActionDBSchema
+from stuff_manager.schemas.action import EditActionBody, ActionDBSchema, ActionCompletedSchema
 from stuff_manager.schemas.tag import NewTag
 
 EditActionResponseSchema = Optional[ActionDBSchema]
 
-async def delete_tags(action_id: int, tags: list[NewTag]):
+async def delete_tags(action_id: int, tags: Optional[list[NewTag]]):
+    if tags is None:
+        return
     original_tag_ids = set([
         tag.tag.id
         async for tag
         in Actions_Tags.objects.filter(action_id=action_id).select_related("tag")
     ])
     # original_tag_ids = set(tag.id for tag in original_tags)
-    new_tag_ids = set(tag["id"] for tag in tags)
+    # new_tag_ids = set(tag["id"] for tag in tags)
+    new_tag_ids = set(tag.id for tag in tags)
     deleted_tags = original_tag_ids - new_tag_ids
     # print("original_tag_ids", original_tag_ids)
     # print("new_tag_ids", new_tag_ids)
@@ -26,12 +30,16 @@ async def delete_tags(action_id: int, tags: list[NewTag]):
         print("deleting tag with id: ", tag_id)
         await Actions_Tags.objects.filter(action_id=action_id, tag_id=tag_id).adelete()
 
-async def create_new_tags(action_id: int, tags: list[NewTag]):
+async def create_new_tags(action_id: int, tags: Optional[list[NewTag]]):
+    if tags is None:
+        return
     action_tags = []
     for tag in tags:
-        if "id" in tag.keys():
-            db_tag = await Tag.objects.aget(id=tag["id"])
-            # continue
+        # if "id" in tag.keys():
+        if hasattr(tag, "id"):
+            if await Actions_Tags.objects.filter(action_id=action_id, tag_id=tag.id).aexists():
+                continue
+            db_tag = await Tag.objects.aget(id=tag.id)
         else:
             db_tag, _ = await Tag.objects.acreate(value=tag.value)
         # print("created tag:", db_tag)
@@ -43,14 +51,16 @@ async def create_new_tags(action_id: int, tags: list[NewTag]):
     t = await Actions_Tags.objects.abulk_create(action_tags)
     print("created tags", t)
 
-async def delete_contexts(action_id: int, contexts: list[NewTag]):
+async def delete_contexts(action_id: int, contexts: Optional[list[NewTag]]):
+    if contexts is None:
+        return
     original_context_ids = set([
         context.tag.id
         async for context
         in Actions_RequiredContexts.objects.filter(action_id=action_id).select_related("tag")
     ])
-    # original_context_ids = set(context.id for context in original_contexts)
-    new_context_ids = set(context["id"] for context in contexts)
+    new_context_ids = set(context.id for context in contexts)
+    # new_context_ids = set(context["id"] for context in contexts)
     deleted_contexts = original_context_ids - new_context_ids
     # print("original_context_ids", original_context_ids)
     # print("new_context_ids", new_context_ids)
@@ -60,11 +70,17 @@ async def delete_contexts(action_id: int, contexts: list[NewTag]):
         await Actions_RequiredContexts.objects.filter(action_id=action_id, tag_id=context_id).adelete()
 
 
-async def create_new_contexts(action_id: int, contexts: list[NewTag]):
+async def create_new_contexts(action_id: int, contexts: Optional[list[NewTag]]):
+    if contexts is None:
+        return
     action_contexts = []
     for context in contexts:
-        if "id" in context.keys():
-            db_context = await Tag.objects.aget(id=context["id"])
+        # if "id" in context.keys():
+        if hasattr(context, "id"):
+            # continue if we already have this association
+            if await Actions_RequiredContexts.objects.filter(action_id=action_id, tag_id=context.id).aexists():
+                continue
+            db_context = await Tag.objects.aget(id=context.id)
         else:
             db_context, _ = await Tag.objects.acreate(value=context.value)
         # print("created context:", db_context)
@@ -75,8 +91,11 @@ async def create_new_contexts(action_id: int, contexts: list[NewTag]):
     print("going to create contexts:", action_contexts)
     await Actions_RequiredContexts.objects.abulk_create(action_contexts)
 
-# async def delete_project(action_id: int):
-#     await Action.objects.update
+
+# async def edit_completion_notes(action_id: int, completion_notes: ActionCompletedSchema):
+#     return
+
+
 
 # could not get the stuff in "extract_action_data" to work async
 async def edit_action(request, action_id: int, data: EditActionBody):
@@ -89,7 +108,19 @@ async def edit_action(request, action_id: int, data: EditActionBody):
     except Action.DoesNotExist:
         raise HttpError(404, "Action not found")
 
-    print("all data", data.dict())
+    # how to deal with completed ? -- similar to tags
+    # get current completion status and new status
+    # if was completed and now not completed, then keep the completion notes, but change completed boolean field
+    # if was not completed and now completed, mark the chang
+    # if completion notes changed, mark the change
+    # -- no deletes necessary
+
+    # print("OG DICT", model_to_dict(action))
+    # print()
+    print("data", data)
+
+    # print("all data", data.dict())
+    # print()
     for attr, value in data.dict().items():
         # must transform project to project_id for getattr to succeed
         if attr == "project":
@@ -102,11 +133,14 @@ async def edit_action(request, action_id: int, data: EditActionBody):
             continue
 
         if attr == "tags":
-            await create_new_tags(action_id, value)
-            await delete_tags(action_id, value)
+            # await create_new_tags(action_id, value)
+            await create_new_tags(action_id, data.tags)
+            await delete_tags(action_id, data.tags)
         elif attr == "required_context":
-            await create_new_contexts(action_id, value)
-            await delete_contexts(action_id, value)
+            await create_new_contexts(action_id, data.required_context)
+            await delete_contexts(action_id, data.required_context)
+        # elif attr == "completion_notes":
+        #     await edit_completion_notes(aciton_id, value)
         else:
             setattr(action, attr, value)
 

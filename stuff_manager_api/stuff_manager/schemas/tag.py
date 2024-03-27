@@ -9,6 +9,8 @@ class NewTag(Schema):
     # this is optional cuz we may send a list of new Tags with no id, and existing Tags which have an id
     id: Optional[int] = None
 
+# NewTagDict = TypedDict('NewTag', **{k: v.outer_type_ for k, v in NewTag.__fields__.items()})
+
 class TagDBSchema(Schema):
     value: str
     id: int

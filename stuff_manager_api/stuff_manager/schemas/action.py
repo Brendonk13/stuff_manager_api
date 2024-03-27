@@ -6,6 +6,13 @@ from .project import  ProjectDBSchema
 # from stuff_manager.schemas.tag import NewTag as TagType, TagDBSchema
 from stuff_manager.schemas.tag import NewTag, TagDBSchema
 
+class ActionCompletedSchema(Schema):
+    id         : Optional[int] = None
+    start_time : Optional[datetime] = None
+    end_time   : Optional[datetime] = None
+    duration   : Optional[datetime] = None
+    notes      : str
+
 # NOte: wont this fail with empty list of tags ??
 class CreateActionSchema(Schema):
     title              : str
@@ -30,6 +37,8 @@ class EditActionBody(Schema):
     project          : Optional[ProjectDBSchema] = None
     required_context : Optional[list[NewTag]] = None
     tags             : Optional[list[NewTag]] = None
+    completed        : Optional[bool] = None
+    completion_notes : Optional[ActionCompletedSchema] = None
 
 
 class ActionDBSchema(Schema):
