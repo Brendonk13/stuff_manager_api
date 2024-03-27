@@ -1,7 +1,13 @@
 insert into stuff_manager_tag (value) values ('cannot_be_done_yet');
 
+Backlog:
+    - delete process_actions.py -- not used
+
 Next:
     - add sort_order query key to list_actions
+
+    edit actions:
+        - next: need to change frontend to be an autocomplete so I dont just make hella new tags
 
 
 design figure out:

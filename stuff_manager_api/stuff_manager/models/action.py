@@ -15,15 +15,16 @@ from .unprocessed import Unprocessed
 #     def get_queryset(self):
 #         return super().get_queryset().filter(date__ne=None)
 
-# class ActionCompletion(models.Model):
-#     start_time = models.DateTimeField(default=None, null=True)
-#     end_time = models.DateTimeField(default=None, null=True)
-#     duration = models.PositiveSmallIntegerField()
-#     # I want to store notes on the action ie "had to make sure the permissions were correct"
-#     # The solution will be to create actual files with the notes
-#     # keep duration, etc and auto-add a query || URL to view this note in the app at the top of the file
-#     # when you complete stuff, you will be prompted to add duration, start_time, end_time, and arbitrary notes (that you can
-#     # mark as useful or not?)
+class ActionCompletion(models.Model):
+    start_time = models.DateTimeField(default=None, null=True)
+    end_time = models.DateTimeField(default=None, null=True)
+    duration = models.PositiveSmallIntegerField(default=0)
+    notes = models.TextField()
+    # I want to store notes on the action ie "had to make sure the permissions were correct"
+    # The solution will be to create actual files with the notes
+    # keep duration, etc and auto-add a query || URL to view this note in the app at the top of the file
+    # when you complete stuff, you will be prompted to add duration, start_time, end_time, and arbitrary notes (that you can
+    # mark as useful or not?)
 
     # -- I want these notes to replace my "completed" folder
 
@@ -48,7 +49,7 @@ class Action(models.Model):
     project = models.ForeignKey(Project, on_delete=models.CASCADE, null=True)
     unprocessed = models.ForeignKey(Unprocessed, on_delete=models.CASCADE, null=True)
 
-    # completion = models.ForeignKey(ActionCompletion, on_delete=models.CASCADE, null=True)
+    completed = models.ForeignKey(ActionCompletion, on_delete=models.CASCADE, null=True)
 
     def __repr__(self):
         return f'Action(title="{self.title}", user={self.user_id}, project={self.project_id}, energy={self.energy})'
