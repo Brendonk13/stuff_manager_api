@@ -8,12 +8,12 @@ from django.forms.models import model_to_dict
 EditCompletionNotesResponse = Optional[ActionCompletedSchema]
 
 async def edit_completion_notes(action, completion_data: ActionCompletedSchema):
-    has_completed_attr = hasattr(completion_data, "completed")
-    if has_completed_attr:
-        # print("hascompleted")
-        # add this for the action.asave() later
-        action.completed = completion_data.completed
-        delattr(completion_data, "completed") # so we can convert the rest of the data to a dict
+    # has_completed_attr = hasattr(completion_data, "completed")
+    # if has_completed_attr:
+    #     # print("hascompleted")
+    #     # add this for the action.asave() later
+    #     action.completed = completion_data.completed
+    #     delattr(completion_data, "completed") # so we can convert the rest of the data to a dict
 
     # if hasattr(completion_data, "id") and completion_data.id is None:
     # prevent this from being in the **completion_data.dict()
@@ -41,9 +41,9 @@ async def edit_completion_notes(action, completion_data: ActionCompletedSchema):
         action.completion_notes.action_id = action_completion.action_id
         await action.asave()
         print("DICT", model_to_dict(action))
-    elif has_completed_attr:
-        await action.asave()
-        print("DICT", model_to_dict(action))
+    # elif has_completed_attr:
+    #     await action.asave()
+    #     print("DICT", model_to_dict(action))
 
     print("DICT", model_to_dict(action_completion))
     return action_completion

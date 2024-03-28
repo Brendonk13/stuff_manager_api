@@ -12,7 +12,7 @@ class ActionCompletedSchema(Schema):
     end_time   : Optional[datetime] = None
     duration   : Optional[int] = None
     notes      : Optional[str]      = ""
-    completed  : Optional[bool]     = None
+    # completed  : Optional[bool]     = None
 
 # NOte: wont this fail with empty list of tags ??
 class CreateActionSchema(Schema):

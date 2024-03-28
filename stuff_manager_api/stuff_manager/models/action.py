@@ -49,8 +49,6 @@ class Action(models.Model):
 class Completion_Notes(models.Model):
     action = models.OneToOneField(
         Action,
-        # blank=True,
-        # null=True,
         primary_key=True,
         on_delete=models.CASCADE,
         related_name="completion_notes",
@@ -58,7 +56,8 @@ class Completion_Notes(models.Model):
     start_time = models.DateTimeField(default=None, null=True)
     end_time = models.DateTimeField(default=None, null=True)
     # minutes
-    duration = models.PositiveSmallIntegerField(default=0)
+    # duration = models.PositiveSmallIntegerField(default=0)
+    duration = models.TimeField(default=None, null=True)
     notes = models.TextField()
 
     def __repr__(self):

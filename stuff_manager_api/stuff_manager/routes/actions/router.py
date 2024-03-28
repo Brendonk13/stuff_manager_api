@@ -6,6 +6,7 @@ from .list_actions import list_actions, ListActionsResponseSchema
 from .get_action import get_action, GetActionResponseSchema
 from .edit_action import edit_action, EditActionResponseSchema
 from .edit_action_completion import edit_action_completion, EditCompletionNotesResponse
+from .get_action_completion import get_action_completion, GetActionCompletionResponseSchema
 
 actions_router = Router(auth=ClerkBearerAuth())
 
@@ -31,6 +32,13 @@ actions_router.add_api_operation(
     ['GET'],
     get_action,
     response=GetActionResponseSchema,
+)
+
+actions_router.add_api_operation(
+    "/{action_id}/completion",
+    ['GET'],
+    get_action_completion,
+    response=GetActionCompletionResponseSchema,
 )
 
 # ==================================== PUTS =====================================
