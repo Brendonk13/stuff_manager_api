@@ -2,16 +2,17 @@ from django.db.models import Q
 from ninja import FilterSchema, Schema
 from typing import Optional
 from datetime import datetime
-from .project import  ProjectDBSchema
+from .project import ProjectDBSchema
 # from stuff_manager.schemas.tag import NewTag as TagType, TagDBSchema
 from stuff_manager.schemas.tag import NewTag, TagDBSchema
 
 class ActionCompletedSchema(Schema):
-    id         : Optional[int] = None
+    action_id  : int
     start_time : Optional[datetime] = None
     end_time   : Optional[datetime] = None
-    duration   : Optional[datetime] = None
-    notes      : str
+    duration   : Optional[int] = None
+    notes      : Optional[str]      = ""
+    completed  : Optional[bool]     = None
 
 # NOte: wont this fail with empty list of tags ??
 class CreateActionSchema(Schema):
@@ -28,6 +29,7 @@ class CreateActionSchema(Schema):
 
 # NOte: wont this fail with empty list of tags ??
 # making fields not required with Optional is not sufficient for pydantic: https://github.com/pydantic/pydantic/issues/6463#issuecomment-1622517803
+# todo: make some of these not optional
 class EditActionBody(Schema):
     id               : int
     title            : Optional[str] = None
@@ -38,7 +40,8 @@ class EditActionBody(Schema):
     required_context : Optional[list[NewTag]] = None
     tags             : Optional[list[NewTag]] = None
     completed        : Optional[bool] = None
-    completion_notes : Optional[ActionCompletedSchema] = None
+    # completion_notes : Optional[ActionCompletedSchema] = None
+    # the notes are in a seperate endpoint
 
 
 class ActionDBSchema(Schema):
@@ -51,6 +54,8 @@ class ActionDBSchema(Schema):
     project          : Optional[ProjectDBSchema]
     required_context : Optional[list[TagDBSchema]]
     tags             : Optional[list[TagDBSchema]] # todo: return tag ID's as well
+    completed        : Optional[bool] = None
+    completion_notes : Optional[ActionCompletedSchema] = None
 
 
 # https://django-ninja.dev/guides/input/filtering/
@@ -61,6 +66,7 @@ class ActionQueryFilterSchema(FilterSchema):
     date             : Optional[datetime]  = None
     tags             : Optional[list[str]] = None
     required_context : Optional[list[str]] = None
+    completed        : Optional[bool]      = None
 
     # Format for query string: {hostname}/api/actions?tags=["delegated"]&required_context=["newContext"]&title=another all lists3
 

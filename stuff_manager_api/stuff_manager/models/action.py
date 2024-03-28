@@ -15,25 +15,6 @@ from .unprocessed import Unprocessed
 #     def get_queryset(self):
 #         return super().get_queryset().filter(date__ne=None)
 
-class ActionCompletion(models.Model):
-    start_time = models.DateTimeField(default=None, null=True)
-    end_time = models.DateTimeField(default=None, null=True)
-    duration = models.PositiveSmallIntegerField(default=0)
-    notes = models.TextField()
-
-    def __repr__(self):
-        return f"ActionCompletion(id={self.id}, notes={self.notes})"
-
-    def __str__(self):
-        return self.__repr__()
-    # I want to store notes on the action ie "had to make sure the permissions were correct"
-    # The solution will be to create actual files with the notes
-    # keep duration, etc and auto-add a query || URL to view this note in the app at the top of the file
-    # when you complete stuff, you will be prompted to add duration, start_time, end_time, and arbitrary notes (that you can
-    # mark as useful or not?)
-
-    # -- I want these notes to replace my "completed" folder
-
 
 class Action(models.Model):
     # save time with no validation ! https://codereview.doctor/features/django/best-practice/charfield-vs-textfield
@@ -55,14 +36,43 @@ class Action(models.Model):
     project = models.ForeignKey(Project, on_delete=models.CASCADE, null=True)
     unprocessed = models.ForeignKey(Unprocessed, on_delete=models.CASCADE, null=True)
 
-    completion_notes = models.ForeignKey(ActionCompletion, on_delete=models.CASCADE, null=True)
+    # completion_notes = models.ForeignKey(Completion_Notes, on_delete=models.CASCADE, null=True, default=None)
     completed = models.BooleanField(default=False)
 
     def __repr__(self):
-        return f'Action(title="{self.title}", user={self.user_id}, project={self.project_id}, energy={self.energy})'
+        return f'Action(title="{self.title}", user={self.user_id}, completed={self.completed}, project={self.project_id}, energy={self.energy})'
 
     def __str__(self):
         return self.__repr__()
+
+
+class Completion_Notes(models.Model):
+    action = models.OneToOneField(
+        Action,
+        # blank=True,
+        # null=True,
+        primary_key=True,
+        on_delete=models.CASCADE,
+        related_name="completion_notes",
+    )
+    start_time = models.DateTimeField(default=None, null=True)
+    end_time = models.DateTimeField(default=None, null=True)
+    # minutes
+    duration = models.PositiveSmallIntegerField(default=0)
+    notes = models.TextField()
+
+    def __repr__(self):
+        return f"Completion_Notes(id={self.action_id}, notes={self.notes})"
+
+    def __str__(self):
+        return self.__repr__()
+    # I want to store notes on the action ie "had to make sure the permissions were correct"
+    # The solution will be to create actual files with the notes
+    # keep duration, etc and auto-add a query || URL to view this note in the app at the top of the file
+    # when you complete stuff, you will be prompted to add duration, start_time, end_time, and arbitrary notes (that you can
+    # mark as useful or not?)
+
+    # -- I want these notes to replace my "completed" folder
 
 
 

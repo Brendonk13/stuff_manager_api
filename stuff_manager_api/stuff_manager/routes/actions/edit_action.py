@@ -5,7 +5,8 @@ from typing import Optional
 from django.forms.models import model_to_dict
 from typing_extensions import TypedDict
 
-from stuff_manager.models import Action, Tag, Actions_Tags, Actions_RequiredContexts, Project
+from stuff_manager.utils.get_action_or_404 import get_action_or_404
+from stuff_manager.models import Action, Tag, Actions_Tags, Actions_RequiredContexts, Project, Completion_Notes
 from stuff_manager.schemas.action import EditActionBody, ActionDBSchema, ActionCompletedSchema
 from stuff_manager.schemas.tag import NewTag
 
@@ -92,35 +93,25 @@ async def create_new_contexts(action_id: int, contexts: Optional[list[NewTag]]):
     await Actions_RequiredContexts.objects.abulk_create(action_contexts)
 
 
-# async def edit_completion_notes(action_id: int, completion_notes: ActionCompletedSchema):
-#     return
+# todo: move this to its own endpoint as well
+async def edit_completion_notes(action, completion_notes: Optional[ActionCompletedSchema]):
+    if completion_notes is None:
+        return
+    if hasattr(completion_notes, "id"):
+        action_completion = await Completion_Notes.objects.filter(id=completion_notes.id).aupdate(**completion_notes.dict())
+    else:
+        action_completion = await Completion_Notes.objects.acreate(**completion_notes.dict())
+    if action.completion_notes_id != action_completion.id:
+        action.completion_notes_id = action_completion.id
+        await action.asave()
 
 
-
-# could not get the stuff in "extract_action_data" to work async
 async def edit_action(request, action_id: int, data: EditActionBody):
     user = request.auth[0]
-    try:
-        action = await Action.objects.aget(id=action_id)
-        if action.user_id != user.id:
-            return 403, { "message": "Unauthorized", "data": None }
+    action = await get_action_or_404(action_id=action_id, user_id=user.id)
 
-    except Action.DoesNotExist:
-        raise HttpError(404, "Action not found")
-
-    # how to deal with completed ? -- similar to tags
-    # get current completion status and new status
-    # if was completed and now not completed, then keep the completion notes, but change completed boolean field
-    # if was not completed and now completed, mark the chang
-    # if completion notes changed, mark the change
-    # -- no deletes necessary
-
-    # print("OG DICT", model_to_dict(action))
-    # print()
     print("data", data)
 
-    # print("all data", data.dict())
-    # print()
     for attr, value in data.dict().items():
         # must transform project to project_id for getattr to succeed
         if attr == "project":
@@ -128,34 +119,30 @@ async def edit_action(request, action_id: int, data: EditActionBody):
             value = value["id"] if value is not None else None
             attr = "project_id"
 
+        # print("attr", attr)
         if value is None and getattr(action, attr) is None:
             print("original is none and so is the new")
             continue
 
         if attr == "tags":
-            # await create_new_tags(action_id, value)
             await create_new_tags(action_id, data.tags)
             await delete_tags(action_id, data.tags)
         elif attr == "required_context":
             await create_new_contexts(action_id, data.required_context)
             await delete_contexts(action_id, data.required_context)
-        # elif attr == "completion_notes":
-        #     await edit_completion_notes(aciton_id, value)
+        elif attr == "completion_notes":
+            await edit_completion_notes(action, data.completion_notes)
         else:
             setattr(action, attr, value)
 
-
-
     await action.asave()
+
+    # construct response
     print("DICT", model_to_dict(action))
     action_dict = model_to_dict(action)
     del action_dict["unprocessed"]
     del action_dict["user"]
     del action_dict["project"]
-    # required_context = [{"value": context.tag.value, "id": context.tag.id} async for context in Actions_RequiredContexts.objects.filter(action_id=action_id).select_related("tag")]
-    # tags = [{"value": tag.tag.value, "id": tag.tag.id} async for tag in Actions_Tags.objects.filter(action_id=action_id).select_related("tag")]
-    # print("tags", tags, type(tags))
-    # print("contexts", required_context, type(required_context))
     return {
         **action_dict,
         "tags": [

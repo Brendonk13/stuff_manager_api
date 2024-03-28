@@ -22,6 +22,8 @@ def extract_action_data(action):
         **get_project_data(action),
         "date": action.date,
         "created": action.created,
+        "completed": action.completed,
+        "completion_notes": action.completion_notes if hasattr(action, "completion_notes") else None,
         "tags": [
             {"value": tag.tag.value, "id": tag.tag.id}
             for tag
