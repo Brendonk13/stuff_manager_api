@@ -16,13 +16,16 @@ def get_project_data(action):
 def extract_action_data(action):
     return {
         "id": action.id,
+        "user_id": action.user_id,
         "title": action.title,
         "description": action.description,
         "energy": action.energy,
         **get_project_data(action),
         "date": action.date,
         "created": action.created,
-        "completed": action.completed,
+        "completed_date": action.completed_date,
+        "completed": bool(action.completed_date),
+        "unprocessed_id": action.unprocessed_id,
         "completion_notes": action.completion_notes if hasattr(action, "completion_notes") else None,
         "tags": [
             {"value": tag.tag.value, "id": tag.tag.id}

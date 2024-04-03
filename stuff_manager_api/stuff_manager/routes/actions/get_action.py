@@ -10,7 +10,6 @@ from .utils.extract_action_data import extract_action_data
 
 GetActionResponseSchema = ActionDBSchema
 
-
 # could not get the stuff in "extract_action_data" to work async
 # fine since its only one get request
 def get_action(request, action_id: int):

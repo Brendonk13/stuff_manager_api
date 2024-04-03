@@ -1,10 +1,11 @@
 
-# from django.contrib.postgres.fields import ArrayField
+from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from .tag import Tag
 from .user import User
 from .project import Project
 from .unprocessed import Unprocessed
+from datetime import datetime
 
 # how can I get an action's history
 # -- adding and removing tags counts
@@ -37,10 +38,12 @@ class Action(models.Model):
     unprocessed = models.ForeignKey(Unprocessed, on_delete=models.CASCADE, null=True)
 
     # completion_notes = models.ForeignKey(Completion_Notes, on_delete=models.CASCADE, null=True, default=None)
-    completed = models.BooleanField(default=False)
+    completed_date = models.DateTimeField(default=None, null=True)
+    # completed = models.BooleanField(default=False)
+    deleted_date = models.DateTimeField(default=None, null=True)
 
     def __repr__(self):
-        return f'Action(title="{self.title}", user={self.user_id}, completed={self.completed}, project={self.project_id}, energy={self.energy})'
+        return f'Action(title="{self.title}", user={self.user_id}, completed={self.completed_date}, project={self.project_id}, energy={self.energy})'
 
     def __str__(self):
         return self.__repr__()
@@ -56,8 +59,9 @@ class Completion_Notes(models.Model):
     start_time = models.DateTimeField(default=None, null=True)
     end_time = models.DateTimeField(default=None, null=True)
     # minutes
-    # duration = models.PositiveSmallIntegerField(default=0)
-    duration = models.TimeField(default=None, null=True)
+    # Array: [Days, Hours, Minutes]
+    duration = ArrayField(models.PositiveSmallIntegerField(default=0), null=True)
+    # duration = models.TimeField(default=None, null=True)
     notes = models.TextField()
 
     def __repr__(self):

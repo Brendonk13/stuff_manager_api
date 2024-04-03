@@ -4,13 +4,27 @@ from ninja.errors import HttpError
 from typing import Optional
 from django.forms.models import model_to_dict
 from typing_extensions import TypedDict
+from ninja import ModelSchema
+from datetime import datetime
 
+from stuff_manager.schemas.tag import TagDBSchema
 from stuff_manager.utils.get_action_or_404 import get_action_or_404
 from stuff_manager.models import Action, Tag, Actions_Tags, Actions_RequiredContexts, Project, Completion_Notes
-from stuff_manager.schemas.action import EditActionBody, ActionDBSchema, ActionCompletedSchema
+# from stuff_manager.schemas.action import EditActionBody, ActionDBSchema, ActionCompletedSchema
+from stuff_manager.schemas.action import ActionDBSchema, ActionCompletedSchema
 from stuff_manager.schemas.tag import NewTag
 
 EditActionResponseSchema = Optional[ActionDBSchema]
+
+class EditActionBody(ModelSchema):
+    required_context : Optional[list[TagDBSchema]]
+    tags             : Optional[list[TagDBSchema]]
+    completed        : bool
+    class Meta:
+        model = Action
+        exclude = ["user", "created"]
+
+
 
 async def delete_tags(action_id: int, tags: Optional[list[NewTag]]):
     if tags is None:
@@ -93,17 +107,17 @@ async def create_new_contexts(action_id: int, contexts: Optional[list[NewTag]]):
     await Actions_RequiredContexts.objects.abulk_create(action_contexts)
 
 
-# todo: move this to its own endpoint as well
-async def edit_completion_notes(action, completion_notes: Optional[ActionCompletedSchema]):
-    if completion_notes is None:
-        return
-    if hasattr(completion_notes, "id"):
-        action_completion = await Completion_Notes.objects.filter(id=completion_notes.id).aupdate(**completion_notes.dict())
-    else:
-        action_completion = await Completion_Notes.objects.acreate(**completion_notes.dict())
-    if action.completion_notes_id != action_completion.id:
-        action.completion_notes_id = action_completion.id
-        await action.asave()
+# # todo: move this to its own endpoint as well
+# async def edit_completion_notes(action, completion_notes: Optional[ActionCompletedSchema]):
+#     if completion_notes is None:
+#         return
+#     if hasattr(completion_notes, "id"):
+#         action_completion = await Completion_Notes.objects.filter(id=completion_notes.id).aupdate(**completion_notes.dict())
+#     else:
+#         action_completion = await Completion_Notes.objects.acreate(**completion_notes.dict())
+#     if action.completion_notes_id != action_completion.id:
+#         action.completion_notes_id = action_completion.id
+#         await action.asave()
 
 
 async def edit_action(request, action_id: int, data: EditActionBody):
@@ -118,6 +132,9 @@ async def edit_action(request, action_id: int, data: EditActionBody):
             # print("proj", value)
             value = value["id"] if value is not None else None
             attr = "project_id"
+        if attr == "completed_date":
+            # make sure this value doesnt overwrite completed
+            continue
 
         # print("attr", attr)
         if value is None and getattr(action, attr) is None:
@@ -130,8 +147,15 @@ async def edit_action(request, action_id: int, data: EditActionBody):
         elif attr == "required_context":
             await create_new_contexts(action_id, data.required_context)
             await delete_contexts(action_id, data.required_context)
-        elif attr == "completion_notes":
-            await edit_completion_notes(action, data.completion_notes)
+        # elif attr == "completion_notes":
+        #     await edit_completion_notes(action, data.completion_notes)
+        elif attr == "completed":
+            if action.completed_date is None and data.completed:
+                print("setting complete to now")
+                setattr(action, "completed_date", datetime.now())
+            elif action.completed_date and not data.completed:
+                print("setting complete to incomplete")
+                setattr(action, "completed_date", None)
         else:
             setattr(action, attr, value)
 
@@ -155,8 +179,11 @@ async def edit_action(request, action_id: int, data: EditActionBody):
             async for context
             in Actions_RequiredContexts.objects.filter(action_id=action_id).select_related("tag")
         ],
-
+        "user_id": action.user_id,
+        "unprocessed_id": action.unprocessed_id,
         # dont get from database if this action has no project
         "project": await Project.objects.aget(id=action.project_id) if data.dict()["project"] is not None else None,
         "created": action.created, # for some reason this doesnt come from model_to_dict
     }
+    # print("returned", returned)
+    # return returned
