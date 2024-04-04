@@ -15,6 +15,9 @@ GetActionResponseSchema = ActionDBSchema
 # fine since its only one get request
 async def get_action(request, action_id: int):
     user = request.auth[0]
-    return await extract_action_data(
+    data = await extract_action_data(
         await get_action_or_404(action_id=action_id, user_id=user.id, get_project=True)
     )
+
+    print("action", data)
+    return data

@@ -10,7 +10,6 @@ Next:
 
     - listactions schema
 
-
 design figure out:
     1. How to replace the "completed" folder on computer:
         - idea is to have optional form show up for completed tasks

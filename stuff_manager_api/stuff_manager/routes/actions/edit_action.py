@@ -115,19 +115,6 @@ async def create_new_contexts(action_id: int, contexts: Optional[list[NewTag]]):
     await Actions_RequiredContexts.objects.abulk_create(action_contexts)
 
 
-# # todo: move this to its own endpoint as well
-# async def edit_completion_notes(action, completion_notes: Optional[ActionCompletedSchema]):
-#     if completion_notes is None:
-#         return
-#     if hasattr(completion_notes, "id"):
-#         action_completion = await Completion_Notes.objects.filter(id=completion_notes.id).aupdate(**completion_notes.dict())
-#     else:
-#         action_completion = await Completion_Notes.objects.acreate(**completion_notes.dict())
-#     if action.completion_notes_id != action_completion.id:
-#         action.completion_notes_id = action_completion.id
-#         await action.asave()
-
-
 async def edit_action(request, action_id: int, data: EditActionBody):
     user = request.auth[0]
     action = await get_action_or_404(action_id=action_id, user_id=user.id)
@@ -135,14 +122,19 @@ async def edit_action(request, action_id: int, data: EditActionBody):
     print("data ==", data)
 
     for attr, value in data.dict().items():
+        if (
+            attr == "deleted_date" and value is None
+            or attr == "completed_date" # make sure this value doesnt overwrite completed
+        ):
+            continue
+
         # must transform project to project_id for getattr to succeed
         if attr == "project":
             # print("proj", value)
             value = value["id"] if value is not None else None
             attr = "project_id"
-        if attr == "completed_date":
-            # make sure this value doesnt overwrite completed
-            continue
+
+        #when deleted, it reset completed
 
         print("attr", attr, "value", value)
         if value is None and hasattr(action, attr) and getattr(action, attr) is None:
@@ -158,10 +150,11 @@ async def edit_action(request, action_id: int, data: EditActionBody):
         # elif attr == "completion_notes":
         #     await edit_completion_notes(action, data.completion_notes)
         elif attr == "completed":
-            if action.completed_date is None and data.completed:
+            # if action.completed_date is None and data.completed:
+            if data.completed:
                 print("setting complete to now")
                 setattr(action, "completed_date", datetime.now())
-            elif action.completed_date and not data.completed:
+            elif data.completed == False:
                 print("setting complete to incomplete")
                 setattr(action, "completed_date", None)
         elif attr in ("title", "description") and value is None:

@@ -52,6 +52,7 @@ class ActionDBSchema(ModelSchema):
     project          : Optional[ProjectDBSchema]
     required_context : Optional[list[TagDBSchema]]
     tags             : Optional[list[TagDBSchema]] # todo: return tag ID's as well
+    # deleted_date     : Optional[datetime] = None
 
     class Meta:
         model = Action
