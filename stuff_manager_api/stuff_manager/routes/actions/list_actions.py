@@ -30,5 +30,5 @@ async def list_actions(request, query_filters: Query[ActionQueryFilterSchema]):
         ).distinct()
     ]
     # todo: should the select related be outside of query_filters.filter ?
-    print("all actions", data)
+    # print("all actions", data)
     return data
