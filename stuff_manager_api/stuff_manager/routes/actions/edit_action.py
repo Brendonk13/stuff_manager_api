@@ -12,17 +12,25 @@ from stuff_manager.utils.get_action_or_404 import get_action_or_404
 from stuff_manager.models import Action, Tag, Actions_Tags, Actions_RequiredContexts, Project, Completion_Notes
 # from stuff_manager.schemas.action import EditActionBody, ActionDBSchema, ActionCompletedSchema
 from stuff_manager.schemas.action import ActionDBSchema, ActionCompletedSchema
+from stuff_manager.schemas.project import ProjectDBSchema
 from stuff_manager.schemas.tag import NewTag
 
 EditActionResponseSchema = Optional[ActionDBSchema]
 
 class EditActionBody(ModelSchema):
-    required_context : Optional[list[TagDBSchema]]
-    tags             : Optional[list[TagDBSchema]]
-    completed        : bool
+    required_context : Optional[list[TagDBSchema]] = None
+    tags             : Optional[list[TagDBSchema]] = None
+    completed        : Optional[bool] = None
+    project          : Optional[ProjectDBSchema] = None
+    title            : Optional[str] = None
+    description      : Optional[str] = None
     class Meta:
         model = Action
         exclude = ["user", "created"]
+        # fields = "__all__"
+        # fields_optional = "__all__"
+        # fields_optional = ["title", "description"]
+
 
 
 
@@ -124,7 +132,7 @@ async def edit_action(request, action_id: int, data: EditActionBody):
     user = request.auth[0]
     action = await get_action_or_404(action_id=action_id, user_id=user.id)
 
-    print("data", data)
+    print("data ==", data)
 
     for attr, value in data.dict().items():
         # must transform project to project_id for getattr to succeed
@@ -136,8 +144,8 @@ async def edit_action(request, action_id: int, data: EditActionBody):
             # make sure this value doesnt overwrite completed
             continue
 
-        # print("attr", attr)
-        if value is None and getattr(action, attr) is None:
+        print("attr", attr, "value", value)
+        if value is None and hasattr(action, attr) and getattr(action, attr) is None:
             print("original is none and so is the new")
             continue
 
@@ -156,6 +164,9 @@ async def edit_action(request, action_id: int, data: EditActionBody):
             elif action.completed_date and not data.completed:
                 print("setting complete to incomplete")
                 setattr(action, "completed_date", None)
+        elif attr in ("title", "description") and value is None:
+            # these should be set to empty string if deleted, None if not in body
+            continue
         else:
             setattr(action, attr, value)
 
@@ -185,5 +196,3 @@ async def edit_action(request, action_id: int, data: EditActionBody):
         "project": await Project.objects.aget(id=action.project_id) if data.dict()["project"] is not None else None,
         "created": action.created, # for some reason this doesnt come from model_to_dict
     }
-    # print("returned", returned)
-    # return returned

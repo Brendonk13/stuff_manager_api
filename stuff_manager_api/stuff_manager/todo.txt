@@ -3,6 +3,7 @@ insert into stuff_manager_tag (value) values ('cannot_be_done_yet');
 Backlog:
     - delete process_actions.py -- not used
     - move all schemas to their own things
+    - make it so listactions doesnt return deleted or completed actions by default
 
 Next:
     - add sort_order query key to list_actions
