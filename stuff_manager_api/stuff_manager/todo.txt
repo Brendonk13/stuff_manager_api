@@ -8,8 +8,7 @@ Backlog:
 Next:
     - add sort_order query key to list_actions
 
-    edit actions:
-        - next: need to change frontend to be an autocomplete so I dont just make hella new tags
+    - listactions schema
 
 
 design figure out:
