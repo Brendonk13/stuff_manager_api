@@ -107,6 +107,7 @@ class ActionQueryFilterSchema(FilterSchema):
     required_context : Optional[list[str]] = None
     # todo: add this filter and use this for the order by
     completed        : Optional[bool]      = None
+    deleted          : Optional[bool]      = None
 
     # Format for query string: {hostname}/api/actions?tags=["delegated"]&required_context=["newContext"]&title=another all lists3
 
@@ -125,3 +126,15 @@ class ActionQueryFilterSchema(FilterSchema):
         # parse query string
         tags = [tag.strip("\"'") for tag in _tags[0].rstrip("]").lstrip("[").split(",")]
         return Q(actions_requiredcontexts__tag__value__in=tags)
+
+    def filter_completed(self, completed: Optional[bool]) -> Q:
+        if completed is None:
+            return Q()
+
+        # return Q(completed_date__isnull=not True)
+        return Q(completed_date__isnull=not completed)
+
+    def filter_deleted(self, deleted: Optional[bool]) -> Q:
+        if deleted is None:
+            return Q()
+        return Q(deleted_date__isnull=not deleted)
