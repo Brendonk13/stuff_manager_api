@@ -1,32 +1,44 @@
 # from asgiref.sync import async_to_sync, sync_to_async
 # from ninja import Schema
 from ninja.errors import HttpError
-from typing import Optional
+from typing import Optional, Union
 from django.forms.models import model_to_dict
-from typing_extensions import TypedDict
-from ninja import ModelSchema
+# from typing_extensions import TypedDict
+from ninja import Schema
 from datetime import datetime
+from pytz import UTC
 
 from stuff_manager.schemas.tag import TagDBSchema
 from stuff_manager.utils.get_action_or_404 import get_action_or_404
-from stuff_manager.models import Action, Tag, Actions_Tags, Actions_RequiredContexts, Project, Completion_Notes
+from stuff_manager.models import Action, Tag, Actions_Tags, Actions_RequiredContexts, Project
 # from stuff_manager.schemas.action import EditActionBody, ActionDBSchema, ActionCompletedSchema
-from stuff_manager.schemas.action import ActionDBSchema, ActionCompletedSchema
+from stuff_manager.schemas.action import ActionDBSchema
 from stuff_manager.schemas.project import ProjectDBSchema
 from stuff_manager.schemas.tag import NewTag
 
 EditActionResponseSchema = Optional[ActionDBSchema]
 
-class EditActionBody(ModelSchema):
-    required_context : Optional[list[TagDBSchema]] = None
-    tags             : Optional[list[TagDBSchema]] = None
-    completed        : Optional[bool] = None
-    project          : Optional[ProjectDBSchema] = None
-    title            : Optional[str] = None
-    description      : Optional[str] = None
-    class Meta:
-        model = Action
-        exclude = ["user", "created"]
+class SentinelValueClass(Schema):
+    pass
+
+SentinelValue = SentinelValueClass()
+# tbh the best is to just never send null, but what about the project
+
+# class EditActionBody(ModelSchema):
+class EditActionBody(Schema):
+    required_context : Union[Optional[list[TagDBSchema]] , SentinelValueClass] = SentinelValue
+    tags             : Union[Optional[list[TagDBSchema]] , SentinelValueClass] = SentinelValue
+    title            : Union[Optional[str]               , SentinelValueClass] = SentinelValue
+    description      : Union[Optional[str]               , SentinelValueClass] = SentinelValue
+    project          : Union[Optional[ProjectDBSchema]   , SentinelValueClass] = SentinelValue
+    completed        : Union[Optional[bool]              , SentinelValueClass] = SentinelValue
+    date             : Union[Optional[datetime]          , SentinelValueClass] = SentinelValue
+    # date             : Optional[datetime] = ""
+    energy           : Union[Optional[int]               , SentinelValueClass] = SentinelValue
+    deleted_date     : Union[Optional[datetime]          , SentinelValueClass] = SentinelValue
+    # class Meta:
+    #     model = Action
+    #     exclude = ["user", "created", "unprocessed"]
         # fields = "__all__"
         # fields_optional = "__all__"
         # fields_optional = ["title", "description"]
@@ -123,20 +135,31 @@ async def edit_action(request, action_id: int, data: EditActionBody):
 
     for attr, value in data.dict().items():
         if (
-            attr == "deleted_date" and value is None
-            or attr == "completed_date" # make sure this value doesnt overwrite completed
+            attr == "completed_date" # make sure this value doesnt overwrite completed
+            or value == SentinelValue
+            or isinstance(getattr(data, attr), SentinelValueClass)
+            # or attr in ("title", "description") and value is None
+            # or attr == "deleted_date" and value == "" # how do I un-delete something??
+            # or attr == "energy" and value == -1 # value from schema, wasnt passed in request
+            # or attr == "date" and value == ""   # value from schema, wasnt passed in request
         ):
             continue
 
+        # if attr in ("required_context", "tags", "project", "title", "description") and isinstance(value, object):
+        #     # need this cuz these can be objects to allow using a sentinel value
+        #     raise HttpError(422, f"Erroneously passed an object for field: {attr}")
         # must transform project to project_id for getattr to succeed
         if attr == "project":
             # print("proj", value)
             value = value["id"] if value is not None else None
             attr = "project_id"
 
+        # this will reset the unprocessed id if its not passed
+        if attr == "unprocessed":
+            attr = "unprocessed_id"
         #when deleted, it reset completed
-
         print("attr", attr, "value", value)
+
         if value is None and hasattr(action, attr) and getattr(action, attr) is None:
             print("original is none and so is the new")
             continue
@@ -153,14 +176,12 @@ async def edit_action(request, action_id: int, data: EditActionBody):
             # if action.completed_date is None and data.completed:
             if data.completed:
                 print("setting complete to now")
-                setattr(action, "completed_date", datetime.now())
+                setattr(action, "completed_date", datetime.now(tz=UTC))
             elif data.completed == False:
                 print("setting complete to incomplete")
                 setattr(action, "completed_date", None)
-        elif attr in ("title", "description") and value is None:
-            # these should be set to empty string if deleted, None if not in body
-            continue
         else:
+            print(f"SETATTR, attr: {attr}, value: {value}")
             setattr(action, attr, value)
 
     await action.asave()

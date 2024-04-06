@@ -4,11 +4,14 @@ Backlog:
     - delete process_actions.py -- not used
     - move all schemas to their own things
     - make it so listactions doesnt return deleted or completed actions by default
+    - update model st strings cannot be null ?
+    - when should a string be nullable
 
 Next:
     - add sort_order query key to list_actions
-
-    - listactions schema
+    - fix schemas in other folders/routes
+    - remove everything that returns a "message" field
+    - rename to contexts
 
 design figure out:
     1. How to replace the "completed" folder on computer:
