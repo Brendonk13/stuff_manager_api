@@ -1,12 +1,10 @@
-from ninja import Schema
+# from ninja import Schema
 # from stuff_manager.models import Action, Unprocessed, unprocessed
 from stuff_manager.models import Action, Unprocessed
 from typing import Optional
 from stuff_manager.schemas.unprocessed import UnprocessedDBSchema
 
-class ListUnprocessedResponseSchema(Schema):
-    message: str
-    data: list[Optional[UnprocessedDBSchema]]
+ListUnprocessedResponseSchema = list[Optional[UnprocessedDBSchema]]
 
 async def get_all_unprocessed(user_id: int):
     return [
@@ -38,8 +36,5 @@ async def list_unprocessed(request):
     user = request.auth[0]
     unprocessed_items = await get_unprocessed_items(user.id)
     print(f"unprocessed ({len(unprocessed_items)}) for user: {unprocessed_items}")
-    return {
-        "message": "Success",
-        "data": unprocessed_items,
-    }
+    return unprocessed_items
 

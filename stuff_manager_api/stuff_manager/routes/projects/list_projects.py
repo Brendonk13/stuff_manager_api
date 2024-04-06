@@ -4,9 +4,7 @@ from stuff_manager.models import Projects_User
 from typing import Optional
 from stuff_manager.schemas.project import ProjectDBSchema
 
-class ListProjectsResponseSchema(Schema):
-    message: str
-    data: list[Optional[ProjectDBSchema]]
+ListProjectsResponseSchema = list[Optional[ProjectDBSchema]]
 
 async def projects_for_user(user_id: int):
     return [
@@ -20,8 +18,5 @@ async def list_projects(request):
     user = request.auth[0]
     projects = await projects_for_user(user.id)
     print(f"projects for user: {projects}")
-    return {
-        "message": "Success",
-        "data": projects,
-    }
+    return projects
 

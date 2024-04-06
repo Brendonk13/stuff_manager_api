@@ -1,14 +1,13 @@
+from typing import Optional
 from ninja import Schema
 from stuff_manager.models import Unprocessed
 from stuff_manager.schemas.unprocessed import UnprocessedDBSchema
 
-class CreateUnprocessedResponseSchema(Schema):
-    message: str
-    data: UnprocessedDBSchema
+CreateUnprocessedResponseSchema = UnprocessedDBSchema
 
 class CreateUnprocessedSchema(Schema):
     title: str
-    description: str
+    description: Optional[str] = ""
 
 async def create_unprocessed(request, data: CreateUnprocessedSchema):
     print(f'data: {data}')
@@ -17,7 +16,4 @@ async def create_unprocessed(request, data: CreateUnprocessedSchema):
     print(f"new_item: {new_item}")
     # print(f"new_item: {dir(new_item)}")
     print(f"new item id: {new_item.id}")
-    return {
-        "message": "Success",
-        "data": new_item,
-    }
+    return new_item

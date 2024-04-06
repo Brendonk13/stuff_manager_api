@@ -1,7 +1,11 @@
-from ninja import Schema
+from ninja import ModelSchema
+from stuff_manager.models import Unprocessed
 
-class UnprocessedDBSchema(Schema):
-    title: str
-    description: str
-    # user: int
-    id: int
+class UnprocessedDBSchema(ModelSchema):
+    class Meta:
+        model = Unprocessed
+        fields = "__all__"
+
+    # title: str
+    # description: str
+    # id: int
