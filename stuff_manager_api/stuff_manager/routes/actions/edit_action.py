@@ -32,16 +32,10 @@ class EditActionBody(Schema):
     description      : Union[Optional[str]               , SentinelValueClass] = SentinelValue
     project          : Union[Optional[ProjectDBSchema]   , SentinelValueClass] = SentinelValue
     completed        : Union[Optional[bool]              , SentinelValueClass] = SentinelValue
+    deleted          : Union[Optional[bool]              , SentinelValueClass] = SentinelValue
     date             : Union[Optional[datetime]          , SentinelValueClass] = SentinelValue
-    # date             : Optional[datetime] = ""
     energy           : Union[Optional[int]               , SentinelValueClass] = SentinelValue
     deleted_date     : Union[Optional[datetime]          , SentinelValueClass] = SentinelValue
-    # class Meta:
-    #     model = Action
-    #     exclude = ["user", "created", "unprocessed"]
-        # fields = "__all__"
-        # fields_optional = "__all__"
-        # fields_optional = ["title", "description"]
 
 
 
@@ -54,8 +48,6 @@ async def delete_tags(action_id: int, tags: Optional[list[NewTag]]):
         async for tag
         in Actions_Tags.objects.filter(action_id=action_id).select_related("tag")
     ])
-    # original_tag_ids = set(tag.id for tag in original_tags)
-    # new_tag_ids = set(tag["id"] for tag in tags)
     new_tag_ids = set(tag.id for tag in tags)
     deleted_tags = original_tag_ids - new_tag_ids
     # print("original_tag_ids", original_tag_ids)
@@ -70,7 +62,6 @@ async def create_new_tags(action_id: int, tags: Optional[list[NewTag]]):
         return
     action_tags = []
     for tag in tags:
-        # if "id" in tag.keys():
         if hasattr(tag, "id"):
             if await Actions_Tags.objects.filter(action_id=action_id, tag_id=tag.id).aexists():
                 continue
@@ -95,7 +86,6 @@ async def delete_contexts(action_id: int, contexts: Optional[list[NewTag]]):
         in Actions_RequiredContexts.objects.filter(action_id=action_id).select_related("tag")
     ])
     new_context_ids = set(context.id for context in contexts)
-    # new_context_ids = set(context["id"] for context in contexts)
     deleted_contexts = original_context_ids - new_context_ids
     # print("original_context_ids", original_context_ids)
     # print("new_context_ids", new_context_ids)
@@ -110,7 +100,6 @@ async def create_new_contexts(action_id: int, contexts: Optional[list[NewTag]]):
         return
     action_contexts = []
     for context in contexts:
-        # if "id" in context.keys():
         if hasattr(context, "id"):
             # continue if we already have this association
             if await Actions_RequiredContexts.objects.filter(action_id=action_id, tag_id=context.id).aexists():
@@ -127,38 +116,28 @@ async def create_new_contexts(action_id: int, contexts: Optional[list[NewTag]]):
     await Actions_RequiredContexts.objects.abulk_create(action_contexts)
 
 
-async def edit_action(request, action_id: int, data: EditActionBody):
-    user = request.auth[0]
-    action = await get_action_or_404(action_id=action_id, user_id=user.id)
 
-    print("data ==", data)
-
+async def save_action(action, action_id: int, data: EditActionBody):
     for attr, value in data.dict().items():
         if (
             attr == "completed_date" # make sure this value doesnt overwrite completed
+            or attr == "deleted_date" # make sure this value doesnt overwrite completed
             or value == SentinelValue
             or isinstance(getattr(data, attr), SentinelValueClass)
-            # or attr in ("title", "description") and value is None
-            # or attr == "deleted_date" and value == "" # how do I un-delete something??
-            # or attr == "energy" and value == -1 # value from schema, wasnt passed in request
-            # or attr == "date" and value == ""   # value from schema, wasnt passed in request
         ):
             continue
 
-        # if attr in ("required_context", "tags", "project", "title", "description") and isinstance(value, object):
-        #     # need this cuz these can be objects to allow using a sentinel value
-        #     raise HttpError(422, f"Erroneously passed an object for field: {attr}")
-        # must transform project to project_id for getattr to succeed
+       # must transform project to project_id for getattr to succeed
         if attr == "project":
-            # print("proj", value)
             value = value["id"] if value is not None else None
             attr = "project_id"
 
         # this will reset the unprocessed id if its not passed
         if attr == "unprocessed":
             attr = "unprocessed_id"
+
         #when deleted, it reset completed
-        print("attr", attr, "value", value)
+        # print("attr", attr, "value", value)
 
         if value is None and hasattr(action, attr) and getattr(action, attr) is None:
             print("original is none and so is the new")
@@ -170,8 +149,13 @@ async def edit_action(request, action_id: int, data: EditActionBody):
         elif attr == "required_context":
             await create_new_contexts(action_id, data.required_context)
             await delete_contexts(action_id, data.required_context)
-        # elif attr == "completion_notes":
-        #     await edit_completion_notes(action, data.completion_notes)
+        elif attr == "deleted":
+            if data.deleted:
+                print("setting deleted to now")
+                setattr(action, "deleted_date", datetime.now(tz=UTC))
+            elif data.deleted == False:
+                print("setting deleted to None")
+                setattr(action, "deleted_date", None)
         elif attr == "completed":
             # if action.completed_date is None and data.completed:
             if data.completed:
@@ -184,10 +168,9 @@ async def edit_action(request, action_id: int, data: EditActionBody):
             print(f"SETATTR, attr: {attr}, value: {value}")
             setattr(action, attr, value)
 
-    await action.asave()
+    return await action.asave()
 
-    # construct response
-    print("DICT", model_to_dict(action))
+async def format_response(action_id: int, action):
     action_dict = model_to_dict(action)
     del action_dict["unprocessed"]
     del action_dict["user"]
@@ -207,6 +190,17 @@ async def edit_action(request, action_id: int, data: EditActionBody):
         "user_id": action.user_id,
         "unprocessed_id": action.unprocessed_id,
         # dont get from database if this action has no project
-        "project": await Project.objects.aget(id=action.project_id) if data.dict()["project"] is not None else None,
+        "project": await Project.objects.aget(id=action.project_id) if action.project_id is not None else None,
         "created": action.created, # for some reason this doesnt come from model_to_dict
     }
+
+async def edit_action(request, action_id: int, data: EditActionBody):
+    user = request.auth[0]
+    action = await get_action_or_404(action_id=action_id, user_id=user.id)
+
+    print("data ==", data)
+    await save_action(action, action_id, data)
+    print('saved action', action)
+
+    # construct response
+    return await format_response(action_id, action)
