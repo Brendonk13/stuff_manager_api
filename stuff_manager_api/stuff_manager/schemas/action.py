@@ -1,3 +1,4 @@
+from enum import Enum
 from django.db.models import Q
 from ninja import FilterSchema, Schema, ModelSchema
 from typing import Optional
@@ -96,18 +97,35 @@ class TestGetActionResponse(ActionDBSchema):
 # class TestGetActionResponse2(Schema):
 #     id: action_schema_dict["id"]
 
+class OrderByEnum(str, Enum):
+    title = "title"
+    energy = "energy"
+    date = "date"
+    project_id = "project_id"
+    completed = "completed"
+    deleted = "deleted"
+    created = "created"
+
+class OrderBy(Schema):
+    # Optional[list[dict[OrderByEnum, bool]]]
+    value: OrderByEnum
+    ascending: bool
+
+OrderByList = Optional[list[OrderBy]]
+
 # https://django-ninja.dev/guides/input/filtering/
 class ActionQueryFilterSchema(FilterSchema):
-    #todo: add orderby
     title            : Optional[str]       = None
     project_id       : Optional[int]       = None
     energy           : Optional[int]       = None
     date             : Optional[datetime]  = None
     tags             : Optional[list[str]] = None
     required_context : Optional[list[str]] = None
-    # todo: add this filter and use this for the order by
     completed        : Optional[bool]      = None
     deleted          : Optional[bool]      = False
+    order_by         : OrderByList         = [OrderBy(value="created", ascending=True)]
+    # order_by         : OrderByList         = [OrderBy(value=OrderByEnum.created, ascending=True)]
+    # order_by         : Optional[list[OrderBy]] = [{"value": OrderByEnum.created, "ascending": True}]
 
     # Format for query string: {hostname}/api/actions?tags=["delegated"]&required_context=["newContext"]&title=another all lists3
 
@@ -134,7 +152,6 @@ class ActionQueryFilterSchema(FilterSchema):
         return Q(completed_date__isnull=not completed)
 
     def filter_deleted(self, deleted: bool = False) -> Q:
-        print("deleted", deleted)
         if deleted is None:
             return Q()
         return Q(deleted_date__isnull=not deleted)
