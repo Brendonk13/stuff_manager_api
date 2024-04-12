@@ -123,12 +123,19 @@ class ActionQueryFilterSchema(FilterSchema):
     required_context : Optional[list[str]] = None
     completed        : Optional[bool]      = None
     deleted          : Optional[bool]      = False
-    order_by         : OrderByList         = [OrderBy(value="created", ascending=True)]
+    # order_by         : Optional[list[str]] = ["created", "true"]
+    # order_by         : OrderByList         = [OrderBy(value="created", ascending=True)]
+    order_by         : str       = '[created,true]'
     # order_by         : OrderByList         = [OrderBy(value=OrderByEnum.created, ascending=True)]
-    # order_by         : Optional[list[OrderBy]] = [{"value": OrderByEnum.created, "ascending": True}]
+    # order_by         : Optional[list[OrderBy]] = ["value": OrderByEnum.created, "ascending": True]
 
     # Format for query string: {hostname}/api/actions?tags=["delegated"]&required_context=["newContext"]&title=another all lists3
 
+    # def filter_order_by(self, order_by: Optional[list[str]]):
+    #     print("filter query order by", order_by)
+    #     if not order_by:
+    #         return Q()
+    #     return Q()
 
     def filter_tags(self, _tags: Optional[list[str]]) -> Q:
         if not _tags:

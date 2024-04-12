@@ -8,14 +8,47 @@ from .utils.extract_action_data import extract_action_data
 
 ListActionsResponseSchema = list[Optional[ActionDBSchema]]
 
-def format_order_by(order_by_list: OrderByList):
+def get_order_by_pairs(order_by_list):
+    print("original, ", order_by_list, type(order_by_list))
+    pairs = [[]]
+    count = 0
+    for order_by in order_by_list.lstrip("[").rstrip("]").split(","):
+        # order_by = order_by.strip("\"'").lstrip("[").rstrip("]").strip("\"'").split(",")
+        print("count", count,"after stripping order by", order_by)
+        if count % 2 == 1:
+            order_by = False if order_by == "false" else True
+
+        if order_by == "completed":
+            order_by = "completed_date"
+        if order_by == "deleted":
+            order_by = "deleted_date"
+
+        # print("about to append order by", order_by)
+        pairs[-1].append(order_by)
+        # pairs[-1].append(order_by)
+        if count % 2 == 1:
+            pairs.append([])
+        count += 1
+    if not pairs[-1]:
+        pairs.pop()
+    print("pairs", pairs)
+    return pairs
+
+def format_order_by(order_by_list: Optional[str]):
+# def format_order_by(order_by_list: Optional[list[str]]):
     if not order_by_list:
         return []
-    return [
-        order_by.value.value if order_by.ascending else f"-{order_by.value.value}"
-        for order_by
-        in order_by_list
-    ]
+    ret = []
+    for value, ascending in get_order_by_pairs(order_by_list):
+        print("value, ascending", value, ascending)
+        ret.append(value if ascending else f"-{value}")
+    return ret
+    # return [
+    #     # order_by.value.value if order_by.ascending else f"-{order_by.value.value}"
+    #     value if ascending else f"-{value}"
+    #     for value, ascending
+    #     in get_order_by_pairs(order_by_list)
+    # ]
 
 # todo: be able to search by regex in title, descriptions
 
