@@ -42,6 +42,16 @@ class Action(models.Model):
     # completed = models.BooleanField(default=False)
     deleted_date = models.DateTimeField(default=None, null=True)
 
+    class Meta:
+        indexes = [
+            models.Index(fields=['created']),
+            models.Index(fields=['created', 'title']),
+            models.Index(fields=['created', 'energy']),
+            models.Index(fields=['energy']),
+            models.Index(fields=['title']),
+            models.Index(fields=['project']),
+        ]
+
     def __repr__(self):
         return f'Action(title="{self.title}", user={self.user_id}, completed={self.completed_date}, project={self.project_id}, energy={self.energy})'
 

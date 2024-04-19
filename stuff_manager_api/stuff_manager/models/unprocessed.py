@@ -6,6 +6,7 @@ class Unprocessed(models.Model):
     title = models.CharField(max_length=128, default="")
     description = models.TextField()
     user = models.ForeignKey(User, on_delete=models.PROTECT)
+    created = models.DateTimeField(auto_now_add=True)
 
     def __repr__(self):
         return f'Unprocessed(id={self.id}, title="{self.title}", user={self.user_id})'

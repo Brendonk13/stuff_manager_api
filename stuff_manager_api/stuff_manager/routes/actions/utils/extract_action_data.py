@@ -54,6 +54,7 @@ async def extract_action_data(action):
         "completed_date": action.completed_date,
         "deleted_date": action.deleted_date,
         "completed": bool(action.completed_date),
+        "deleted": bool(action.deleted_date),
         "unprocessed_id": action.unprocessed_id,
         "completion_notes": action.completion_notes if hasattr(action, "completion_notes") else None,
         "tags": await tags_for_action(action.id),
