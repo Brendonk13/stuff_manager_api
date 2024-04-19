@@ -8,6 +8,11 @@ class Unprocessed(models.Model):
     user = models.ForeignKey(User, on_delete=models.PROTECT)
     created = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        indexes = [
+            models.Index(fields=['created']),
+        ]
+
     def __repr__(self):
         return f'Unprocessed(id={self.id}, title="{self.title}", user={self.user_id})'
 

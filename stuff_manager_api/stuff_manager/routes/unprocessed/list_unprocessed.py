@@ -10,7 +10,7 @@ async def get_all_unprocessed(user_id: int):
     return [
         unprocessed
         async for unprocessed
-        in Unprocessed.objects.filter(user_id=user_id)
+        in Unprocessed.objects.filter(user_id=user_id).order_by('-created', '-id')
     ]
 
 
