@@ -1,64 +1,57 @@
 from ninja import Query
 from stuff_manager.models import Action
 from typing import Optional
-from ninja import ModelSchema
-from stuff_manager.schemas.action import ActionQueryFilterSchema, ActionDBSchema, OrderByList
+# from ninja import ModelSchema
+from stuff_manager.schemas.action import ActionQueryFilterSchema, ActionDBSchema
 from .utils.extract_action_data import extract_action_data
 
 
 ListActionsResponseSchema = list[Optional[ActionDBSchema]]
 
-def get_order_by_pairs(order_by_list):
-    print("original, ", order_by_list, type(order_by_list))
-    pairs = [[]]
-    count = 0
-    for order_by in order_by_list.lstrip("[").rstrip("]").split(","):
-        # order_by = order_by.strip("\"'").lstrip("[").rstrip("]").strip("\"'").split(",")
-        print("count", count,"after stripping order by", order_by)
-        if count % 2 == 1:
-            order_by = False if order_by == "false" else True
+def extract_order_by_pairs(order_by_list):
+    """
+        order by query string format explained:
+        order_by = [title,True,created,False] ==> order by title ascending, then created descending -- must extract pairs
+    """
+    order_by_list = order_by_list.lstrip("[").rstrip("]").split(",")
 
-        if order_by == "completed":
-            order_by = "completed_date"
-        if order_by == "deleted":
-            order_by = "deleted_date"
+    for idx in range(0, len(order_by_list), 2):
+        field_name, ascending = order_by_list[idx], order_by_list[idx + 1]
+        ascending = True if ascending == "true" else False
 
-        # print("about to append order by", order_by)
-        pairs[-1].append(order_by)
-        # pairs[-1].append(order_by)
-        if count % 2 == 1:
-            pairs.append([])
-        count += 1
-    if not pairs[-1]:
-        pairs.pop()
-    print("pairs", pairs)
-    return pairs
+        if field_name == "completed":
+            field_name = "completed_date"
+        if field_name == "deleted":
+            field_name = "deleted_date"
+        yield field_name, ascending
 
 def format_order_by(order_by_list: Optional[str]):
 # def format_order_by(order_by_list: Optional[list[str]]):
     if not order_by_list:
         return []
-    ret = []
-    for value, ascending in get_order_by_pairs(order_by_list):
-        print("value, ascending", value, ascending)
-        ret.append(value if ascending else f"-{value}")
-    return ret
-    # return [
-    #     # order_by.value.value if order_by.ascending else f"-{order_by.value.value}"
-    #     value if ascending else f"-{value}"
-    #     for value, ascending
-    #     in get_order_by_pairs(order_by_list)
-    # ]
+    return [
+        value if ascending else f"-{value}"
+        for value, ascending
+        in extract_order_by_pairs(order_by_list)
+    ]
+
+    # ret = []
+    # for value, ascending in extract_order_by_pairs(order_by_list):
+    #     print("value, ascending", value, ascending)
+    #     ret.append(value if ascending else f"-{value}")
+    # return ret
+
+
 
 # todo: be able to search by regex in title, descriptions
-
 # todo: cannot paginate async yet
 # https://github.com/vitalik/django-ninja/pull/1030/commits
 # @paginate
 async def list_actions(request, query_filters: Query[ActionQueryFilterSchema]):
     print("query filters", type(query_filters), query_filters)
-    # print(dir(query_filters))
     order_by = query_filters.order_by
+
+    # order_by is not a field on the model so make sure we dont filter by this value
     setattr(query_filters, "order_by", None)
     order_by = format_order_by(order_by)
     print("formatted order by", order_by)
@@ -69,7 +62,6 @@ async def list_actions(request, query_filters: Query[ActionQueryFilterSchema]):
         async for action
         in query_filters.filter(
             Action.objects.filter(user_id=user.id).select_related("project", "completion_notes")
-        # ).distinct()
         ).order_by(*order_by)
     ]
     # todo: should the select related be outside of query_filters.filter ?

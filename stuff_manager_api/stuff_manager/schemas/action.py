@@ -49,6 +49,7 @@ class EditActionBody(Schema):
 class ActionDBSchema(ModelSchema):
     # this value is computed from completed_date
     completed        : Optional[bool] = None
+    deleted          : Optional[bool] = None
     completion_notes : Optional[ActionCompletedSchema] = None
     project          : Optional[ProjectDBSchema]
     required_context : Optional[list[TagDBSchema]]
@@ -111,7 +112,7 @@ class OrderBy(Schema):
     value: OrderByEnum
     ascending: bool
 
-OrderByList = Optional[list[OrderBy]]
+# OrderByList = Optional[list[OrderBy]]
 
 # https://django-ninja.dev/guides/input/filtering/
 class ActionQueryFilterSchema(FilterSchema):
@@ -123,19 +124,9 @@ class ActionQueryFilterSchema(FilterSchema):
     required_context : Optional[list[str]] = None
     completed        : Optional[bool]      = None
     deleted          : Optional[bool]      = False
-    # order_by         : Optional[list[str]] = ["created", "true"]
-    # order_by         : OrderByList         = [OrderBy(value="created", ascending=True)]
     order_by         : str       = '[created,true]'
-    # order_by         : OrderByList         = [OrderBy(value=OrderByEnum.created, ascending=True)]
-    # order_by         : Optional[list[OrderBy]] = ["value": OrderByEnum.created, "ascending": True]
 
     # Format for query string: {hostname}/api/actions?tags=["delegated"]&required_context=["newContext"]&title=another all lists3
-
-    # def filter_order_by(self, order_by: Optional[list[str]]):
-    #     print("filter query order by", order_by)
-    #     if not order_by:
-    #         return Q()
-    #     return Q()
 
     def filter_tags(self, _tags: Optional[list[str]]) -> Q:
         if not _tags:
@@ -153,9 +144,9 @@ class ActionQueryFilterSchema(FilterSchema):
         return Q(actions_requiredcontexts__tag__value__in=tags)
 
     def filter_completed(self, completed: Optional[bool]) -> Q:
+        print("============================ filter completed", completed)
         if completed is None:
             return Q()
-
         return Q(completed_date__isnull=not completed)
 
     def filter_deleted(self, deleted: bool = False) -> Q:
