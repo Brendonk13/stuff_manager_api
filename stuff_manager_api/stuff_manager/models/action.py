@@ -20,7 +20,7 @@ from datetime import datetime
 class Action(models.Model):
     # save time with no validation ! https://codereview.doctor/features/django/best-practice/charfield-vs-textfield
     description = models.TextField()
-    title = models.CharField(max_length=128)
+    name = models.CharField(max_length=128)
     created = models.DateTimeField(auto_now_add=True)
 
     # date = models.ForeignKey(, on_delete=models.CASCADE)
@@ -45,15 +45,15 @@ class Action(models.Model):
     class Meta:
         indexes = [
             models.Index(fields=['created']),
-            models.Index(fields=['created', 'title']),
+            models.Index(fields=['created', 'name']),
             models.Index(fields=['created', 'energy']),
             models.Index(fields=['energy']),
-            models.Index(fields=['title']),
+            models.Index(fields=['name']),
             models.Index(fields=['project']),
         ]
 
     def __repr__(self):
-        return f'Action(title="{self.title}", user={self.user_id}, completed={self.completed_date}, project={self.project_id}, energy={self.energy})'
+        return f'Action(name="{self.name}", user={self.user_id}, completed={self.completed_date}, project={self.project_id}, energy={self.energy})'
 
     def __str__(self):
         return self.__repr__()
@@ -105,12 +105,12 @@ class Actions_Tags(models.Model):
         return self.__repr__()
 
 
-class Actions_RequiredContexts(models.Model):
+class Actions_Contexts(models.Model):
     action = models.ForeignKey(Action, on_delete=models.PROTECT)
     tag = models.ForeignKey(Tag, on_delete=models.CASCADE)
 
     def __repr__(self):
-        return f'Actions_RequiredContexts(action={self.action_id}, tag={self.tag_id})'
+        return f'Actions_Contexts(action={self.action_id}, tag={self.tag_id})'
 
     def __str__(self):
         return self.__repr__()

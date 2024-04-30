@@ -10,7 +10,7 @@ from pytz import UTC
 
 from stuff_manager.schemas.tag import TagDBSchema
 from stuff_manager.utils.get_action_or_404 import get_action_or_404
-from stuff_manager.models import Action, Tag, Actions_Tags, Actions_RequiredContexts, Project
+from stuff_manager.models import Action, Tag, Actions_Tags, Actions_Contexts, Project
 # from stuff_manager.schemas.action import EditActionBody, ActionDBSchema, ActionCompletedSchema
 from stuff_manager.schemas.action import ActionDBSchema
 from stuff_manager.schemas.project import ProjectDBSchema
@@ -26,16 +26,16 @@ SentinelValue = SentinelValueClass()
 
 # class EditActionBody(ModelSchema):
 class EditActionBody(Schema):
-    required_context : Union[Optional[list[TagDBSchema]] , SentinelValueClass] = SentinelValue
-    tags             : Union[Optional[list[TagDBSchema]] , SentinelValueClass] = SentinelValue
-    title            : Union[Optional[str]               , SentinelValueClass] = SentinelValue
-    description      : Union[Optional[str]               , SentinelValueClass] = SentinelValue
-    project          : Union[Optional[ProjectDBSchema]   , SentinelValueClass] = SentinelValue
-    completed        : Union[Optional[bool]              , SentinelValueClass] = SentinelValue
-    deleted          : Union[Optional[bool]              , SentinelValueClass] = SentinelValue
-    date             : Union[Optional[datetime]          , SentinelValueClass] = SentinelValue
-    energy           : Union[Optional[int]               , SentinelValueClass] = SentinelValue
-    deleted_date     : Union[Optional[datetime]          , SentinelValueClass] = SentinelValue
+    contexts     : Union[Optional[list[TagDBSchema]] , SentinelValueClass] = SentinelValue
+    tags         : Union[Optional[list[TagDBSchema]] , SentinelValueClass] = SentinelValue
+    name         : Union[Optional[str]               , SentinelValueClass] = SentinelValue
+    description  : Union[Optional[str]               , SentinelValueClass] = SentinelValue
+    project      : Union[Optional[ProjectDBSchema]   , SentinelValueClass] = SentinelValue
+    completed    : Union[Optional[bool]              , SentinelValueClass] = SentinelValue
+    deleted      : Union[Optional[bool]              , SentinelValueClass] = SentinelValue
+    date         : Union[Optional[datetime]          , SentinelValueClass] = SentinelValue
+    energy       : Union[Optional[int]               , SentinelValueClass] = SentinelValue
+    deleted_date : Union[Optional[datetime]          , SentinelValueClass] = SentinelValue
 
 
 
@@ -83,7 +83,7 @@ async def delete_contexts(action_id: int, contexts: Optional[list[NewTag]]):
     original_context_ids = set([
         context.tag.id
         async for context
-        in Actions_RequiredContexts.objects.filter(action_id=action_id).select_related("tag")
+        in Actions_Contexts.objects.filter(action_id=action_id).select_related("tag")
     ])
     new_context_ids = set(context.id for context in contexts)
     deleted_contexts = original_context_ids - new_context_ids
@@ -92,7 +92,7 @@ async def delete_contexts(action_id: int, contexts: Optional[list[NewTag]]):
     # print("deleted_contexts", deleted_contexts)
     for context_id in deleted_contexts:
         print("deleting context with id: ", context_id)
-        await Actions_RequiredContexts.objects.filter(action_id=action_id, tag_id=context_id).adelete()
+        await Actions_Contexts.objects.filter(action_id=action_id, tag_id=context_id).adelete()
 
 
 async def create_new_contexts(action_id: int, contexts: Optional[list[NewTag]]):
@@ -102,18 +102,18 @@ async def create_new_contexts(action_id: int, contexts: Optional[list[NewTag]]):
     for context in contexts:
         if hasattr(context, "id"):
             # continue if we already have this association
-            if await Actions_RequiredContexts.objects.filter(action_id=action_id, tag_id=context.id).aexists():
+            if await Actions_Contexts.objects.filter(action_id=action_id, tag_id=context.id).aexists():
                 continue
             db_context = await Tag.objects.aget(id=context.id)
         else:
             db_context, _ = await Tag.objects.acreate(value=context.value)
         # print("created context:", db_context)
         action_contexts.append(
-            Actions_RequiredContexts(action_id=action_id, tag_id=db_context.id)
+            Actions_Contexts(action_id=action_id, tag_id=db_context.id)
         )
 
     print("going to create contexts:", action_contexts)
-    await Actions_RequiredContexts.objects.abulk_create(action_contexts)
+    await Actions_Contexts.objects.abulk_create(action_contexts)
 
 
 
@@ -146,9 +146,9 @@ async def save_action(action, action_id: int, data: EditActionBody):
         if attr == "tags":
             await create_new_tags(action_id, data.tags)
             await delete_tags(action_id, data.tags)
-        elif attr == "required_context":
-            await create_new_contexts(action_id, data.required_context)
-            await delete_contexts(action_id, data.required_context)
+        elif attr == "contexts":
+            await create_new_contexts(action_id, data.contexts)
+            await delete_contexts(action_id, data.contexts)
         elif attr == "deleted":
             if data.deleted:
                 print("setting deleted to now")
@@ -182,10 +182,10 @@ async def format_response(action_id: int, action):
             async for tag
             in Actions_Tags.objects.filter(action_id=action_id).select_related("tag")
         ],
-        "required_context": [
+        "contexts": [
             {"value": context.tag.value, "id": context.tag.id}
             async for context
-            in Actions_RequiredContexts.objects.filter(action_id=action_id).select_related("tag")
+            in Actions_Contexts.objects.filter(action_id=action_id).select_related("tag")
         ],
         "user_id": action.user_id,
         "unprocessed_id": action.unprocessed_id,

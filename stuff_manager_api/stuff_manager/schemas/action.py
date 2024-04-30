@@ -18,7 +18,7 @@ class ActionCompletedSchema(Schema):
 
 # NOte: wont this fail with empty list of tags ??
 class CreateActionSchema(Schema):
-    title              : str
+    name               : str
     description        : str
     date               : Optional[datetime] = None
     energy             : Optional[int]
@@ -26,23 +26,23 @@ class CreateActionSchema(Schema):
     delegated          : bool = False
     someday_maybe      : bool = False
     tags               : list[NewTag]
-    required_context   : list[NewTag]
+    contexts           : list[NewTag]
 
 
 # NOte: wont this fail with empty list of tags ??
 # making fields not required with Optional is not sufficient for pydantic: https://github.com/pydantic/pydantic/issues/6463#issuecomment-1622517803
 # todo: make some of these not optional
 class EditActionBody(Schema):
-    id               : int
-    title            : Optional[str] = None
-    description      : Optional[str] = None
-    energy           : Optional[int] = None
-    date             : Optional[datetime] = None
-    project          : Optional[ProjectDBSchema] = None
-    required_context : Optional[list[NewTag]] = None
-    tags             : Optional[list[NewTag]] = None
-    completed_date   : Optional[datetime] = None
-    deleted_date     : Optional[datetime] = None
+    id             : int
+    name           : Optional[str] = None
+    description    : Optional[str] = None
+    energy         : Optional[int] = None
+    date           : Optional[datetime] = None
+    project        : Optional[ProjectDBSchema] = None
+    contexts       : Optional[list[NewTag]] = None
+    tags           : Optional[list[NewTag]] = None
+    completed_date : Optional[datetime] = None
+    deleted_date   : Optional[datetime] = None
     # completion_notes : Optional[ActionCompletedSchema] = None
     # the notes are in a seperate endpoint
 
@@ -52,7 +52,7 @@ class ActionDBSchema(ModelSchema):
     deleted          : Optional[bool] = None
     completion_notes : Optional[ActionCompletedSchema] = None
     project          : Optional[ProjectDBSchema]
-    required_context : Optional[list[TagDBSchema]]
+    contexts         : Optional[list[TagDBSchema]]
     tags             : Optional[list[TagDBSchema]] # todo: return tag ID's as well
     # deleted_date     : Optional[datetime] = None
 
@@ -70,7 +70,7 @@ class ActionDBSchema(ModelSchema):
 #     energy           : Optional[int]
 #     date             : Optional[datetime] # todo: added this later instead of at start by accident, should work
 #     project          : Optional[ProjectDBSchema]
-#     required_context : Optional[list[TagDBSchema]]
+#     context : Optional[list[TagDBSchema]]
 #     tags             : Optional[list[TagDBSchema]] # todo: return tag ID's as well
 #     completed_date   : Optional[datetime] = None
 #     deleted_date     : Optional[datetime] = None
@@ -84,7 +84,7 @@ class ActionDBSchema(ModelSchema):
 #     "energy"           : Optional[int],
 #     "date"             : Optional[datetime], # todo: added this later instead of at start by accident, should work
 #     "project"          : Optional[ProjectDBSchema],
-#     "required_context" : Optional[list[TagDBSchema]],
+#     "context" : Optional[list[TagDBSchema]],
 #     "tags"             : Optional[list[TagDBSchema]], # todo: return tag ID's as well
 #     "completed_date"   : Optional[datetime],
 #     "deleted_date"     : Optional[datetime],
@@ -99,7 +99,7 @@ class TestGetActionResponse(ActionDBSchema):
 #     id: action_schema_dict["id"]
 
 class OrderByEnum(str, Enum):
-    title = "title"
+    name = "name"
     energy = "energy"
     date = "date"
     project_id = "project_id"
@@ -116,17 +116,17 @@ class OrderBy(Schema):
 
 # https://django-ninja.dev/guides/input/filtering/
 class ActionQueryFilterSchema(FilterSchema):
-    title            : Optional[str]       = None
-    project_id       : Optional[int]       = None
-    energy           : Optional[int]       = None
-    date             : Optional[datetime]  = None
-    tags             : Optional[list[str]] = None
-    required_context : Optional[list[str]] = None
-    completed        : Optional[bool]      = None
-    deleted          : Optional[bool]      = False
-    order_by         : str       = '[created,true]'
+    name       : Optional[str]       = None
+    project_id : Optional[int]       = None
+    energy     : Optional[int]       = None
+    date       : Optional[datetime]  = None
+    tags       : Optional[list[str]] = None
+    contexts   : Optional[list[str]] = None
+    completed  : Optional[bool]      = None
+    deleted    : Optional[bool]      = False
+    order_by   : str       = '[created,true]'
 
-    # Format for query string: {hostname}/api/actions?tags=["delegated"]&required_context=["newContext"]&title=another all lists3
+    # Format for query string: {hostname}/api/actions?tags=["delegated"]&contexts=["newContext"]&name=another all lists3
 
     def filter_tags(self, _tags: Optional[list[str]]) -> Q:
         if not _tags:
@@ -135,13 +135,12 @@ class ActionQueryFilterSchema(FilterSchema):
         tags = [tag.strip("\"'") for tag in _tags[0].rstrip("]").lstrip("[").split(",")]
         return Q(actions_tags__tag__value__in=tags)
 
-    def filter_required_context(self, _tags: Optional[list[str]]) -> Q:
-
+    def filter_contexts(self, _tags: Optional[list[str]]) -> Q:
         if not _tags:
             return Q()
         # parse query string
         tags = [tag.strip("\"'") for tag in _tags[0].rstrip("]").lstrip("[").split(",")]
-        return Q(actions_requiredcontexts__tag__value__in=tags)
+        return Q(actions_contexts__tag__value__in=tags)
 
     def filter_completed(self, completed: Optional[bool]) -> Q:
         print("============================ filter completed", completed)

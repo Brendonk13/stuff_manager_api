@@ -1,6 +1,6 @@
 # from stuff_manager_api.stuff_manager.models import project
 from ninja import Schema
-from stuff_manager.models import Action, Actions_Tags, Actions_RequiredContexts, Project, Projects_User, Tag
+from stuff_manager.models import Action, Actions_Tags, Actions_Contexts, Project, Projects_User, Tag
 from typing import Optional
 from datetime import datetime
 from stuff_manager.schemas.tag import NewTag as TagType
@@ -30,7 +30,7 @@ async def get_default_action_tags():
 
 
 def extract_tags_and_contexts(action_data):
-    required_context = []
+    contexts = []
     default_tags = ["delegated", "someday_maybe", "cannot_be_done_yet"]
     tags = []
     # add default tags
@@ -46,13 +46,13 @@ def extract_tags_and_contexts(action_data):
         tags += [tag["value"] for tag in action_data["tags"]]
         del action_data["tags"]
 
-    if "required_context" in action_data:
-        required_context += [context["value"] for context in action_data["required_context"]]
-        del action_data["required_context"]
+    if "contexts" in action_data:
+        contexts += [context["value"] for context in action_data["contexts"]]
+        del action_data["contexts"]
 
-    return action_data, tags, required_context
+    return action_data, tags, contexts
 
-async def add_tags_and_contexts(action_id: int, tags, required_context):
+async def add_tags_and_contexts(action_id: int, tags, contexts):
     # create Tags
     action_tags = []
     print("input tags")
@@ -70,15 +70,15 @@ async def add_tags_and_contexts(action_id: int, tags, required_context):
 
     # create Contexts
     action_contexts = []
-    for context in required_context:
+    for context in contexts:
         if not context:
             continue
         db_context, _ = await Tag.objects.aget_or_create(value=context)
         action_contexts.append(
-            Actions_RequiredContexts(action_id=action_id, tag_id=db_context.id)
+            Actions_Contexts(action_id=action_id, tag_id=db_context.id)
         )
 
-    await Actions_RequiredContexts.objects.abulk_create(action_contexts)
+    await Actions_Contexts.objects.abulk_create(action_contexts)
 
 
 # =================================== ENTRYPOINT ===============================
@@ -103,7 +103,7 @@ async def create_actions(request, data: ProcessActionsRequestBody):
 
 
 async def create_action(project, action, user_id: int, unprocessed_id: int):
-    action_data, tags, required_context = extract_tags_and_contexts(action.dict())
+    action_data, tags, contexts = extract_tags_and_contexts(action.dict())
     action_data["unprocessed_id"] = unprocessed_id
 
     if project.name:
@@ -114,4 +114,4 @@ async def create_action(project, action, user_id: int, unprocessed_id: int):
     print("action_data", action_data)
     new_action = await Action.objects.acreate(**action_data)
     print(f"created action: {new_action}")
-    await add_tags_and_contexts(new_action.id, tags, required_context)
+    await add_tags_and_contexts(new_action.id, tags, contexts)

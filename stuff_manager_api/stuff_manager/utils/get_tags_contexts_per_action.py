@@ -1,4 +1,4 @@
-from stuff_manager.models import Actions_Tags, Actions_RequiredContexts
+from stuff_manager.models import Actions_Tags, Actions_Contexts
 
 
 async def tags_for_action(action_id: int):
@@ -13,5 +13,5 @@ async def contexts_for_action(action_id: int):
     return [
         {"value": tag.tag.value, "id": tag.tag.id}
         async for tag
-        in Actions_RequiredContexts.objects.filter(action_id=action_id).select_related("tag")
+        in Actions_Contexts.objects.filter(action_id=action_id).select_related("tag")
     ]

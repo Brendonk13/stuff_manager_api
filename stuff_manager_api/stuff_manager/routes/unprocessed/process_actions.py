@@ -8,14 +8,14 @@ from stuff_manager.models import Action
 from typing import Optional
 
 class ActionSchema(Schema):
-    title: str
+    name: str
     description: str
     date: Optional[datetime] = None
 
 
 # todo: change the shape of this data -- project should be its own thing
 class ProcessActions(Schema):
-    title: str
+    name: str
     description: str
     # project: bool # WAS HERER
     steps: list[ActionSchema] #NOTE: think this got changed to "actions"
@@ -47,7 +47,8 @@ async def process_actions(request, data: ProcessActions):
     # wait, I dont think this is being used at all !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     # todo: change from title ==> project_name
     # todo: this should be adding them to Projects_User table also !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    project = await Project.objects.acreate(**{"name": the_data['title']}) if is_project else None
+    # project = await Project.objects.acreate(**{"name": the_data['title']}) if is_project else None
+    project = await Project.objects.acreate(**{"name": the_data['name']}) if is_project else None
     print(the_data)
     for action in the_data['steps']:
         if is_project:
